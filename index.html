@@ -30,6 +30,7 @@
     <nav class="main-nav" aria-label="Main navigation">
       <a href="#home">Home</a>
       <a href="#services">Services</a>
+      <a href="#experiences">Experiences</a>
       <a href="#gallery">Gallery</a>
       <a href="#shop">Shop</a>
       <a href="#contact">Contact</a>
@@ -43,6 +44,7 @@
   <nav class="mobile-nav" aria-label="Mobile navigation" hidden>
     <a href="#home">Home</a>
     <a href="#services">Services</a>
+      <a href="#experiences">Experiences</a>
     <a href="#gallery">Gallery</a>
     <a href="#shop">Shop</a>
     <a href="#contact">Contact</a>
@@ -162,6 +164,36 @@
     </div>
   </div>
 </section>
+
+<!-- ============ EXPERIENCES / SUB-BRANDS ============ -->
+<section id="experiences" class="experiences">
+  <div class="container">
+    <div class="section-head fade-up-scroll">
+      <p class="eyebrow">Our Brands</p>
+      <h2 class="section-title gold-text">Our Experiences</h2>
+    </div>
+
+    <div id="brands-grid" class="brands-grid" aria-live="polite">
+      <div class="gallery-skeleton"></div>
+      <div class="gallery-skeleton"></div>
+      <div class="gallery-skeleton"></div>
+    </div>
+
+    <p id="brands-empty" class="gallery-empty" hidden>More experiences coming soon.</p>
+  </div>
+</section>
+
+<!-- Brand Detail Modal -->
+<div id="brand-modal" class="lightbox brand-modal" hidden>
+  <button class="lightbox-close brand-modal-close" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card">
+    <img id="brand-modal-img" class="brand-modal-img" src="" alt="" hidden>
+    <p id="brand-modal-tagline" class="eyebrow"></p>
+    <h3 id="brand-modal-name" class="brand-modal-name gold-text"></h3>
+    <p id="brand-modal-description" class="brand-modal-description"></p>
+    <ul id="brand-modal-highlights" class="brand-modal-highlights"></ul>
+  </div>
+</div>
 
 <!-- ============ GALLERY ============ -->
 <section id="gallery" class="gallery">
@@ -357,6 +389,7 @@
 
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="inquiries">Inquiries</button>
+        <button class="admin-tab" data-tab="brands">Experiences</button>
         <button class="admin-tab" data-tab="gallery">Gallery Manager</button>
         <button class="admin-tab" data-tab="products">Products</button>
         <button class="admin-tab" data-tab="stats">Stats</button>
@@ -364,6 +397,28 @@
 
       <div id="admin-tab-inquiries" class="admin-tab-content">
         <div id="admin-inquiries-list"></div>
+      </div>
+
+      <div id="admin-tab-brands" class="admin-tab-content" hidden>
+        <button id="admin-add-brand-btn" class="btn-primary">+ Add Experience</button>
+        <div id="admin-brand-form-wrap" class="admin-inline-form-wrap" hidden>
+          <form id="brand-form" class="admin-inline-form admin-product-form">
+            <input type="hidden" id="brand-id">
+            <input type="text" id="brand-name" placeholder="Brand name" required>
+            <input type="text" id="brand-tagline" placeholder="Tagline">
+            <textarea id="brand-description" placeholder="Description (use blank lines to separate paragraphs)" rows="5" required></textarea>
+            <textarea id="brand-highlights" placeholder="Highlights, one per line" rows="4"></textarea>
+            <div class="admin-file-row">
+              <input type="file" id="brand-image-file" accept="image/*">
+              <img id="brand-image-preview" class="admin-image-preview" hidden alt="Preview">
+            </div>
+            <div class="admin-form-actions">
+              <button type="submit" class="btn-primary">Save Experience</button>
+              <button type="button" id="brand-cancel-btn" class="btn-secondary">Cancel</button>
+            </div>
+          </form>
+        </div>
+        <div id="admin-brands-list" class="admin-gallery-list"></div>
       </div>
 
       <div id="admin-tab-gallery" class="admin-tab-content" hidden>
@@ -442,6 +497,7 @@
   }
 </script>
 <script src="/js/supabase-client.js"></script>
+<script src="/js/brands.js"></script>
 <script src="/js/gallery.js"></script>
 <script src="/js/shop.js"></script>
 <script src="/js/contact.js"></script>

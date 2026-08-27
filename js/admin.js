@@ -5,11 +5,13 @@ let adminInitialized = false;
 function initAdminDashboard() {
   if (!adminInitialized) {
     wireAdminTabs();
+    wireBrandManager();
     wireGalleryManager();
     wireProductManager();
     adminInitialized = true;
   }
   loadAdminInquiries();
+  loadAdminBrands();
   loadAdminGallery();
   loadAdminProducts();
   loadAdminStats();
@@ -326,4 +328,130 @@ async function loadAdminStats() {
       </div>
     `;
   }).join('');
+}
+
+/* ---------- EXPERIENCES / BRANDS ---------- */
+function wireBrandManager() {
+  const formWrap = document.getElementById('admin-brand-form-wrap');
+  const form = document.getElementById('brand-form');
+
+  document.getElementById('admin-add-brand-btn').addEventListener('click', () => {
+    form.reset();
+    document.getElementById('brand-id').value = '';
+    document.getElementById('brand-image-preview').hidden = true;
+    formWrap.hidden = false;
+  });
+
+  document.getElementById('brand-cancel-btn').addEventListener('click', () => { formWrap.hidden = true; });
+
+  document.getElementById('brand-image-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById('brand-image-preview');
+    preview.src = URL.createObjectURL(file);
+    preview.hidden = false;
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('brand-id').value;
+    const fileInput = document.getElementById('brand-image-file');
+    const file = fileInput.files[0];
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    let imageUrl;
+    if (file) {
+      const path = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+      const { error: uploadError } = await supabaseClient.storage.from('brands').upload(path, file);
+      if (uploadError) {
+        alert('Image upload failed: ' + uploadError.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Experience';
+        return;
+      }
+      const { data: urlData } = supabaseClient.storage.from('brands').getPublicUrl(path);
+      imageUrl = urlData.publicUrl;
+    }
+
+    const highlights = document.getElementById('brand-highlights').value
+      .split('\n').map((h) => h.trim()).filter(Boolean);
+
+    const payload = {
+      name: document.getElementById('brand-name').value.trim(),
+      tagline: document.getElementById('brand-tagline').value.trim(),
+      description: document.getElementById('brand-description').value.trim(),
+      highlights,
+    };
+    if (imageUrl) payload.image_url = imageUrl;
+
+    let error;
+    if (id) {
+      ({ error } = await supabaseClient.from('brands').update(payload).eq('id', id));
+    } else {
+      ({ error } = await supabaseClient.from('brands').insert([payload]));
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save Experience';
+
+    if (error) { alert('Save failed: ' + error.message); return; }
+
+    formWrap.hidden = true;
+    form.reset();
+    document.getElementById('brand-image-preview').hidden = true;
+    loadAdminBrands();
+    loadAdminStats();
+    if (typeof loadBrands === 'function') loadBrands();
+  });
+}
+
+async function loadAdminBrands() {
+  const list = document.getElementById('admin-brands-list');
+  list.innerHTML = '<p class="admin-loading">Loading…</p>';
+
+  const { data, error } = await supabaseClient.from('brands').select('*').order('created_at', { ascending: true });
+
+  if (error) { list.innerHTML = `<p class="admin-error-msg">${escapeHtmlAdmin(error.message)}</p>`; return; }
+  if (!data.length) { list.innerHTML = '<p class="admin-empty">No experiences yet.</p>'; return; }
+
+  list.innerHTML = data.map((b) => `
+    <div class="admin-gallery-item glass-card" data-id="${b.id}">
+      ${b.image_url ? `<img src="${b.image_url}" alt="${escapeHtmlAdmin(b.name)}">` : ''}
+      <p class="admin-row-title">${escapeHtmlAdmin(b.name)}</p>
+      <p class="admin-row-sub">${escapeHtmlAdmin(b.tagline || '')}</p>
+      <div class="admin-form-actions" style="justify-content:center; margin-top:0.6rem;">
+        <button class="btn-secondary admin-edit-brand-btn" data-id="${b.id}">Edit</button>
+        <button class="btn-secondary admin-delete-brand-btn" data-id="${b.id}">Delete</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.admin-edit-brand-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const b = data.find((item) => String(item.id) === btn.dataset.id);
+      if (!b) return;
+      document.getElementById('brand-id').value = b.id;
+      document.getElementById('brand-name').value = b.name || '';
+      document.getElementById('brand-tagline').value = b.tagline || '';
+      document.getElementById('brand-description').value = b.description || '';
+      document.getElementById('brand-highlights').value = (b.highlights || []).join('\n');
+      const preview = document.getElementById('brand-image-preview');
+      if (b.image_url) { preview.src = b.image_url; preview.hidden = false; } else { preview.hidden = true; }
+      document.getElementById('admin-brand-form-wrap').hidden = false;
+    });
+  });
+
+  list.querySelectorAll('.admin-delete-brand-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Delete this experience?')) return;
+      const { error } = await supabaseClient.from('brands').delete().eq('id', btn.dataset.id);
+      if (error) { alert('Delete failed: ' + error.message); return; }
+      loadAdminBrands();
+      loadAdminStats();
+      if (typeof loadBrands === 'function') loadBrands();
+    });
+  });
 }

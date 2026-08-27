@@ -909,3 +909,50 @@ select option {
   background-color: #111111;
   color: var(--color-white);
 }
+
+/* ============================================
+   EXPERIENCES / SUB-BRANDS
+   ============================================ */
+.experiences { padding: 6rem 0; }
+
+.brands-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 700px) { .brands-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1000px) { .brands-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+.brand-card { overflow: hidden; padding: 0; display: flex; flex-direction: column; }
+.brand-card-img { width: 100%; aspect-ratio: 16/10; overflow: hidden; }
+.brand-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-base); }
+.brand-card:hover .brand-card-img img { transform: scale(1.05); }
+.brand-card-img-placeholder {
+  background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(255,255,255,0.02));
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+.brand-card-name { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 600; }
+.brand-card-excerpt { color: var(--color-white-muted); font-size: 0.88rem; flex: 1; margin-bottom: 0.8rem; }
+.brand-view-more { width: 100%; justify-content: center; }
+
+/* Brand detail modal (reuses .lightbox base positioning) */
+.brand-modal-content {
+  max-width: min(90vw, 640px);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 2rem;
+  text-align: left;
+}
+.brand-modal-img { width: 100%; border-radius: 10px; margin-bottom: 1.2rem; max-height: 260px; object-fit: cover; }
+.brand-modal-name { font-family: var(--font-heading); font-size: 1.8rem; margin: 0.3rem 0 1rem; }
+.brand-modal-description p { color: var(--color-white-muted); margin-bottom: 0.9rem; font-size: 0.92rem; }
+.brand-modal-highlights { list-style: none; display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+.brand-modal-highlights li {
+  background: rgba(212,175,55,0.1);
+  border: 1px solid var(--card-border);
+  color: var(--gold-accent);
+  font-size: 0.78rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-pill);
+}
