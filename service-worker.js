@@ -1,9 +1,5 @@
-const CACHE_NAME = 'ami-designs-v1';
+const CACHE_NAME = 'ami-designs-v2';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/app.js',
   '/manifest.json',
   '/assets/logo.png',
   '/assets/icons/icon-192.png',
@@ -29,16 +25,27 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  const isCoreAsset =
+    event.request.mode === 'navigate' ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.js');
 
-  // Network-first for Supabase API calls
-  if (url.hostname.includes('supabase.co')) {
+  // Network-first for HTML/CSS/JS and page navigations, so updates always show immediately
+  if (isCoreAsset || url.hostname.includes('supabase.co')) {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/offline.html')))
     );
     return;
   }
 
-  // Cache-first for everything else (static assets)
+  // Cache-first for images, icons, fonts — things that rarely change
   event.respondWith(
     caches.match(event.request).then((cached) => {
       return cached || fetch(event.request).catch(() => caches.match('/offline.html'));
