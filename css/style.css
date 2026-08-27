@@ -875,3 +875,11 @@ button { font-family: inherit; }
 }
 .bar-count { font-weight: 700; margin-top: 0.5rem; }
 .bar-label { font-size: 0.75rem; color: var(--color-white-muted); margin-top: 0.2rem; }
+
+.admin-file-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.admin-image-preview {
+  width: 70px; height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+}

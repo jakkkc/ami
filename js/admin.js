@@ -166,20 +166,50 @@ function wireProductManager() {
   document.getElementById('admin-add-product-btn').addEventListener('click', () => {
     form.reset();
     document.getElementById('product-id').value = '';
+    document.getElementById('product-image-preview').hidden = true;
     formWrap.hidden = false;
   });
 
   document.getElementById('product-cancel-btn').addEventListener('click', () => { formWrap.hidden = true; });
 
+  document.getElementById('product-image-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById('product-image-preview');
+    preview.src = URL.createObjectURL(file);
+    preview.hidden = false;
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('product-id').value;
+    const fileInput = document.getElementById('product-image-file');
+    const file = fileInput.files[0];
+    let imageUrl = document.getElementById('product-image-url').value.trim();
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    if (file) {
+      const path = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+      const { error: uploadError } = await supabaseClient.storage.from('products').upload(path, file);
+      if (uploadError) {
+        alert('Image upload failed: ' + uploadError.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Product';
+        return;
+      }
+      const { data: urlData } = supabaseClient.storage.from('products').getPublicUrl(path);
+      imageUrl = urlData.publicUrl;
+    }
+
     const payload = {
       name: document.getElementById('product-name').value.trim(),
       description: document.getElementById('product-description').value.trim(),
       price: parseFloat(document.getElementById('product-price').value) || null,
       category: document.getElementById('product-category').value,
-      image_url: document.getElementById('product-image-url').value.trim(),
+      image_url: imageUrl,
       in_stock: document.getElementById('product-in-stock').checked,
     };
 
@@ -190,10 +220,14 @@ function wireProductManager() {
       ({ error } = await supabaseClient.from('products').insert([payload]));
     }
 
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save Product';
+
     if (error) { alert('Save failed: ' + error.message); return; }
 
     formWrap.hidden = true;
     form.reset();
+    document.getElementById('product-image-preview').hidden = true;
     loadAdminProducts();
     loadAdminStats();
     if (typeof loadShop === 'function') loadShop();
@@ -245,6 +279,8 @@ async function loadAdminProducts() {
       document.getElementById('product-category').value = p.category || '';
       document.getElementById('product-image-url').value = p.image_url || '';
       document.getElementById('product-in-stock').checked = p.in_stock !== false;
+      const preview = document.getElementById('product-image-preview');
+      if (p.image_url) { preview.src = p.image_url; preview.hidden = false; } else { preview.hidden = true; }
       document.getElementById('admin-product-form-wrap').hidden = false;
     });
   });
