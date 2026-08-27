@@ -537,3 +537,171 @@ button { font-family: inherit; }
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ============================================
+   CONTACT
+   ============================================ */
+.contact { padding: 6rem 0; }
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+@media (min-width: 900px) {
+  .contact-grid { grid-template-columns: 1.3fr 1fr; align-items: start; }
+}
+
+.contact-form { padding: 2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+.form-row { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-row label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-accent);
+}
+.form-row input,
+.form-row select,
+.form-row textarea {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  transition: border-color var(--transition-base);
+}
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+  outline: none;
+  border-color: var(--gold-accent);
+}
+.form-row select option { background: #111; color: #fff; }
+.form-row textarea { resize: vertical; }
+
+.form-submit-btn { justify-content: center; margin-top: 0.5rem; }
+.form-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.contact-info { display: flex; flex-direction: column; gap: 1rem; }
+.contact-info-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.3rem;
+  text-decoration: none;
+  color: var(--color-white);
+}
+.contact-info-item svg { color: var(--gold-accent); flex-shrink: 0; }
+.contact-info-label { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-white-muted); }
+.contact-info-value { font-family: var(--font-heading); font-size: 1.05rem; margin-top: 0.15rem; }
+.whatsapp-highlight { border-color: rgba(212,175,55,0.5); }
+
+/* ============================================
+   TOAST
+   ============================================ */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--gold-gradient);
+  color: #000;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 400ms ease, transform 400ms ease;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast-error { background: linear-gradient(135deg, #7a1f1f, #b33d3d); color: #fff; }
+
+/* ============================================
+   CONTACT
+   ============================================ */
+.contact { padding: 6rem 0; }
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+@media (min-width: 900px) {
+  .contact-grid { grid-template-columns: 1.3fr 1fr; align-items: start; }
+}
+
+.contact-form { padding: 2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+.form-row { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-row label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-accent);
+}
+.form-row input,
+.form-row select,
+.form-row textarea {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  transition: border-color var(--transition-base);
+}
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+  outline: none;
+  border-color: var(--gold-accent);
+}
+.form-row select option { background: #111; color: #fff; }
+.form-row textarea { resize: vertical; }
+
+.form-submit-btn { justify-content: center; margin-top: 0.5rem; }
+.form-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.contact-info { display: flex; flex-direction: column; gap: 1rem; }
+.contact-info-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.3rem;
+  text-decoration: none;
+  color: var(--color-white);
+}
+.contact-info-item svg { color: var(--gold-accent); flex-shrink: 0; }
+.contact-info-label { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-white-muted); }
+.contact-info-value { font-family: var(--font-heading); font-size: 1.05rem; margin-top: 0.15rem; }
+.whatsapp-highlight { border-color: rgba(212,175,55,0.5); }
+
+/* ============================================
+   TOAST
+   ============================================ */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--gold-gradient);
+  color: #000;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 400ms ease, transform 400ms ease;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast-error { background: linear-gradient(135deg, #7a1f1f, #b33d3d); color: #fff; }
