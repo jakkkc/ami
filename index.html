@@ -193,6 +193,35 @@
   </div>
 </section>
 
+<!-- ============ SHOP ============ -->
+<section id="shop" class="shop">
+  <div class="container">
+    <div class="section-head fade-up-scroll">
+      <p class="eyebrow">Collection</p>
+      <h2 class="section-title gold-text">Shop the Collection</h2>
+    </div>
+
+    <div class="filter-tabs" role="tablist" aria-label="Filter products by category">
+      <button class="shop-filter-tab active" data-filter="All">All</button>
+      <button class="shop-filter-tab" data-filter="Events">Events</button>
+      <button class="shop-filter-tab" data-filter="Apparel">Apparel</button>
+      <button class="shop-filter-tab" data-filter="Art">Art</button>
+      <button class="shop-filter-tab" data-filter="Leather">Leather</button>
+    </div>
+
+    <div id="shop-grid" class="shop-grid" aria-live="polite">
+      <div class="gallery-skeleton"></div>
+      <div class="gallery-skeleton"></div>
+      <div class="gallery-skeleton"></div>
+      <div class="gallery-skeleton"></div>
+    </div>
+
+    <p id="shop-empty" class="gallery-empty" hidden>
+      No products listed yet — check back soon.
+    </p>
+  </div>
+</section>
+
 <!-- Lightbox -->
 <div id="lightbox" class="lightbox" hidden>
   <button class="lightbox-close" aria-label="Close">&times;</button>
@@ -212,6 +241,7 @@
 </script>
 <script src="/js/supabase-client.js"></script>
 <script src="/js/gallery.js"></script>
+<script src="/js/shop.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>
