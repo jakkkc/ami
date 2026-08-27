@@ -431,6 +431,9 @@ button { font-family: inherit; }
   flex-direction: column;
   padding: 2rem;
 }
+.lightbox[hidden] {
+  display: none;
+}
 .lightbox img { max-width: min(90vw, 900px); max-height: 75vh; border-radius: 8px; border: 1px solid var(--card-border); }
 .lightbox-caption { text-align: center; margin-top: 1rem; }
 .lightbox-caption p:first-child { font-family: var(--font-heading); font-size: 1.2rem; margin-bottom: 0.3rem; }
@@ -442,4 +445,33 @@ button { font-family: inherit; }
   font-size: 2.2rem;
   line-height: 1;
   cursor: pointer;
+}
+
+/* ============================================
+   MOBILE NAV
+   ============================================ */
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  background: rgba(0,0,0,0.97);
+  border-top: 1px solid rgba(212,175,55,0.15);
+}
+.mobile-nav[hidden] { display: none; }
+.mobile-nav a {
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: var(--color-white-muted);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.mobile-nav a:hover { color: var(--gold-accent); }
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.hamburger span { transition: all var(--transition-base); }
+
+@media (min-width: 900px) {
+  .mobile-nav { display: none !important; }
 }
