@@ -883,3 +883,29 @@ button { font-family: inherit; }
   border-radius: 8px;
   border: 1px solid var(--card-border);
 }
+
+/* ============================================
+   ACCESSIBILITY FIXES: button contrast & dropdown readability
+   ============================================ */
+
+/* Give btn-secondary a solid dark fill so text stays readable everywhere it's used */
+.btn-secondary {
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--color-white);
+}
+.btn-secondary:hover {
+  background: rgba(30, 30, 30, 0.95);
+  border-color: var(--gold-accent);
+  color: var(--gold-accent);
+}
+
+/* Global select/option contrast fix (covers admin dropdowns, filters, etc.) */
+select {
+  background-color: #0A0A0A;
+  color: var(--color-white);
+}
+select option {
+  background-color: #111111;
+  color: var(--color-white);
+}
