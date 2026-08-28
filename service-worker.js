@@ -23,32 +23,45 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+function isCacheable(request) {
+  // Only GET requests over http/https can be stored in the Cache API.
+  // This excludes HEAD/POST requests and browser-extension-injected requests.
+  if (request.method !== 'GET') return false;
+  const url = new URL(request.url);
+  return url.protocol === 'http:' || url.protocol === 'https:';
+}
+
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+  const request = event.request;
+  const url = new URL(request.url);
+
+  if (!isCacheable(request)) {
+    // Let uncacheable requests (extensions, HEAD, etc.) pass straight through.
+    return;
+  }
+
   const isCoreAsset =
-    event.request.mode === 'navigate' ||
+    request.mode === 'navigate' ||
     url.pathname.endsWith('.html') ||
     url.pathname.endsWith('.css') ||
     url.pathname.endsWith('.js');
 
-  // Network-first for HTML/CSS/JS and page navigations, so updates always show immediately
   if (isCoreAsset || url.hostname.includes('supabase.co')) {
     event.respondWith(
-      fetch(event.request)
+      fetch(request)
         .then((response) => {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/offline.html')))
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('/offline.html')))
     );
     return;
   }
 
-  // Cache-first for images, icons, fonts — things that rarely change
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).catch(() => caches.match('/offline.html'));
+    caches.match(request).then((cached) => {
+      return cached || fetch(request).catch(() => caches.match('/offline.html'));
     })
   );
 });
