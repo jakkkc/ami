@@ -2,22 +2,30 @@
 
 let adminInitialized = false;
 
+function safeInit(fn, label) {
+  try {
+    if (typeof fn === 'function') fn();
+  } catch (err) {
+    console.error(`Admin init error in ${label}:`, err);
+  }
+}
+
 function initAdminDashboard() {
   if (!adminInitialized) {
-    wireAdminTabs();
-    wireBrandManager();
-    wireGalleryManager();
-    wireProductManager();
-    if (typeof wireAdminEventModal === 'function') wireAdminEventModal();
-    if (typeof wireTicketScanner === 'function') wireTicketScanner();
-    if (typeof wireTicketingSubtabs === 'function') wireTicketingSubtabs();
+    safeInit(wireAdminTabs, 'wireAdminTabs');
+    safeInit(wireBrandManager, 'wireBrandManager');
+    safeInit(wireGalleryManager, 'wireGalleryManager');
+    safeInit(wireProductManager, 'wireProductManager');
+    safeInit(typeof wireAdminEventModal === 'function' ? wireAdminEventModal : null, 'wireAdminEventModal');
+    safeInit(typeof wireTicketScanner === 'function' ? wireTicketScanner : null, 'wireTicketScanner');
+    safeInit(typeof wireTicketingSubtabs === 'function' ? wireTicketingSubtabs : null, 'wireTicketingSubtabs');
     adminInitialized = true;
   }
-  loadAdminInquiries();
-  loadAdminBrands();
-  loadAdminGallery();
-  loadAdminProducts();
-  loadAdminStats();
+  safeInit(loadAdminInquiries, 'loadAdminInquiries');
+  safeInit(loadAdminBrands, 'loadAdminBrands');
+  safeInit(loadAdminGallery, 'loadAdminGallery');
+  safeInit(loadAdminProducts, 'loadAdminProducts');
+  safeInit(loadAdminStats, 'loadAdminStats');
 }
 
 function escapeHtmlAdmin(str) {

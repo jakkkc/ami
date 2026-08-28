@@ -463,7 +463,11 @@
               <option value="Art">Art</option>
               <option value="Leather">Leather</option>
             </select>
-            <input type="url" id="product-image-url" placeholder="Image URL">
+            <input type="hidden" id="product-image-url">
+            <div class="admin-file-row">
+              <input type="file" id="product-image-file" accept="image/*">
+              <img id="product-image-preview" class="admin-image-preview" hidden alt="Preview">
+            </div>
             <label class="admin-toggle"><input type="checkbox" id="product-in-stock" checked> In Stock</label>
             <div class="admin-form-actions">
               <button type="submit" class="btn-primary">Save Product</button>
