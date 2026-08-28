@@ -1002,3 +1002,144 @@ select option {
 #admin-event-modal {
   z-index: 500;
 }
+
+/* ============================================
+   ADMIN DASHBOARD REDESIGN — consistent hierarchy
+   ============================================ */
+
+/* --- Tabs: clean underline nav, distinct from public gold pills --- */
+.admin-tabs {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 0;
+}
+.admin-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-white-muted);
+  padding: 0.7rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border-radius: 0;
+  transition: color var(--transition-base), border-color var(--transition-base);
+}
+.admin-tab:hover { color: var(--color-white); }
+.admin-tab.active {
+  color: var(--gold-accent);
+  border-bottom-color: var(--gold-accent);
+  background: transparent;
+  font-weight: 600;
+}
+
+/* Sub-tabs (Scan Ticket / All Tickets): visually secondary, nested under primary tabs */
+.admin-subtabs {
+  border-bottom: none;
+  margin-bottom: 1.2rem;
+  gap: 0.5rem;
+}
+.admin-subtab {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--card-border);
+  color: var(--color-white-muted);
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+.admin-subtab:hover { color: var(--color-white); }
+.admin-subtab.active {
+  background: rgba(212,175,55,0.12);
+  border-color: var(--gold-accent);
+  color: var(--gold-accent);
+  font-weight: 600;
+}
+
+/* --- Forms: responsive grid instead of unpredictable flex-wrap --- */
+.admin-inline-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1.5rem;
+}
+.admin-inline-form textarea,
+.admin-inline-form .admin-file-row,
+.admin-inline-form .admin-toggle,
+.admin-inline-form .form-row,
+.admin-inline-form .admin-form-actions {
+  grid-column: 1 / -1;
+}
+/* Multi-field editors (product/brand/ticket-type/event forms) read better single-column */
+.admin-product-form {
+  grid-template-columns: 1fr;
+}
+.admin-form-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 0.3rem;
+}
+
+/* --- Button hierarchy: primary (save) / secondary (neutral) / danger (delete) --- */
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  color: #ff8080;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+.btn-danger:hover {
+  background: rgba(255, 100, 100, 0.1);
+  border-color: #ff8080;
+}
+
+/* --- Record rows: consistent rhythm across Inquiries, Products, Ticket Types, Sales --- */
+.admin-row {
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 0.8rem;
+  transition: border-color var(--transition-base);
+}
+.admin-row:hover { border-color: var(--gold-accent); }
+.admin-row-title { font-size: 0.95rem; }
+.admin-row-sub { line-height: 1.5; }
+
+/* --- Card-style records: Gallery Manager / Experiences admin cards --- */
+.admin-gallery-list, .admin-products-list {
+  gap: 1.2rem;
+}
+.admin-gallery-item {
+  padding: 1.2rem;
+  transition: border-color var(--transition-base), transform var(--transition-base);
+}
+.admin-gallery-item:hover {
+  border-color: var(--gold-accent);
+  transform: translateY(-2px);
+}
+.admin-gallery-item img {
+  height: 150px;
+  margin-bottom: 0.8rem;
+}
+.admin-gallery-item .admin-row-title { margin-top: 0.2rem; }
+.admin-gallery-item .admin-form-actions {
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+}
+
+/* --- Stats cards: tighten alignment --- */
+.stats-cards { gap: 1.2rem; }
+
+/* --- Admin panel section spacing rhythm --- */
+.admin-tab-content > *:first-child { margin-top: 0; }

@@ -107,7 +107,7 @@ async function loadAdminTicketTypes(brandId) {
       </div>
       <div class="admin-row-actions">
         <button class="btn-secondary admin-edit-ticket-type-btn" data-id="${t.id}">Edit</button>
-        <button class="btn-secondary admin-delete-ticket-type-btn" data-id="${t.id}">Delete</button>
+        <button class="btn-danger admin-delete-ticket-type-btn" data-id="${t.id}">Delete</button>
       </div>
     </div>
   `).join('');

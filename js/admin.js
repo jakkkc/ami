@@ -153,7 +153,7 @@ async function loadAdminGallery() {
       <img src="${item.image_url}" alt="${escapeHtmlAdmin(item.title || '')}">
       <p class="admin-row-title">${escapeHtmlAdmin(item.title || '')}</p>
       <p class="admin-row-sub">${escapeHtmlAdmin(item.category || '')}</p>
-      <button class="btn-secondary admin-delete-gallery-btn" data-id="${item.id}" data-url="${item.image_url}">Delete</button>
+      <button class="btn-danger admin-delete-gallery-btn" data-id="${item.id}" data-url="${item.image_url}">Delete</button>
     </div>
   `).join('');
 
@@ -267,7 +267,7 @@ async function loadAdminProducts() {
           <input type="checkbox" class="product-stock-toggle" data-id="${p.id}" ${p.in_stock ? 'checked' : ''}> In Stock
         </label>
         <button class="btn-secondary admin-edit-btn" data-id="${p.id}">Edit</button>
-        <button class="btn-secondary admin-delete-product-btn" data-id="${p.id}">Delete</button>
+        <button class="btn-danger admin-delete-product-btn" data-id="${p.id}">Delete</button>
       </div>
     </div>
   `).join('');
@@ -436,7 +436,7 @@ async function loadAdminBrands() {
       <div class="admin-form-actions" style="justify-content:center; margin-top:0.6rem;">
         <button class="btn-secondary admin-edit-brand-btn" data-id="${b.id}">Edit</button>
         <button class="btn-secondary admin-event-btn" data-id="${b.id}">Event & Tickets</button>
-        <button class="btn-secondary admin-delete-brand-btn" data-id="${b.id}">Delete</button>
+        <button class="btn-danger admin-delete-brand-btn" data-id="${b.id}">Delete</button>
       </div>
     </div>
   `).join('');
