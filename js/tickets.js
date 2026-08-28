@@ -128,11 +128,51 @@ function showTicketConfirmation(ticket, buyerWhatsapp) {
     correctLevel: QRCode.CorrectLevel.H,
   });
 
-  const shareText = encodeURIComponent(
-    `🎟️ AMI Designs & Events Ticket\n${ticket.brand_name} — ${ticket.event_title}\n${ticket.ticket_type_name}\nCode: ${ticket.ticket_code}\nAdmits: ${ticket.people_count}\n\nPresent this code/QR at entry.`
-  );
+  const shareCaption =
+    `🎟️ AMI Designs & Events Ticket\n${ticket.brand_name} — ${ticket.event_title}\n${ticket.ticket_type_name}\nCode: ${ticket.ticket_code}\nAdmits: ${ticket.people_count}\n\nPresent this QR/code at entry.`;
   const digits = buyerWhatsapp.replace(/[^0-9]/g, '');
-  document.getElementById('confirmation-whatsapp-btn').href = `https://wa.me/${digits}?text=${shareText}`;
+  const fileName = `AMI-Ticket-${ticket.ticket_code}.png`;
+
+  const whatsappBtn = document.getElementById('confirmation-whatsapp-btn');
+  const downloadBtn = document.getElementById('confirmation-download-btn');
+
+  whatsappBtn.onclick = async () => {
+    const canvas = qrContainer.querySelector('canvas');
+    if (!canvas) {
+      window.open(`https://wa.me/${digits}?text=${encodeURIComponent(shareCaption)}`, '_blank');
+      return;
+    }
+
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], text: shareCaption });
+          return;
+        } catch (err) {
+          // User cancelled or share failed — fall through to text-link fallback below.
+        }
+      }
+
+      // Fallback for browsers without file-sharing support (mostly desktop):
+      // open the text-only WhatsApp link and prompt to attach the downloaded image.
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+      window.open(`https://wa.me/${digits}?text=${encodeURIComponent(shareCaption + '\n\n(Your ticket image has been downloaded — attach it in WhatsApp.)')}`, '_blank');
+    }, 'image/png');
+  };
+
+  downloadBtn.onclick = () => {
+    const canvas = qrContainer.querySelector('canvas');
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = fileName;
+    link.click();
+  };
 
   document.getElementById('ticket-confirmation-modal').hidden = false;
   document.body.style.overflow = 'hidden';
