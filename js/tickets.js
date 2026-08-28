@@ -118,8 +118,15 @@ function showTicketConfirmation(ticket, buyerWhatsapp) {
     (ticket.event_location ? ` · ${ticket.event_location}` : '');
 
   const qrContainer = document.getElementById('confirmation-qr');
-  qrContainer.innerHTML = '<canvas id="confirmation-qr-canvas"></canvas>';
-  QRCode.toCanvas(document.getElementById('confirmation-qr-canvas'), ticket.ticket_code, { width: 200, margin: 1 });
+  qrContainer.innerHTML = '';
+  new QRCode(qrContainer, {
+    text: ticket.ticket_code,
+    width: 200,
+    height: 200,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H,
+  });
 
   const shareText = encodeURIComponent(
     `🎟️ AMI Designs & Events Ticket\n${ticket.brand_name} — ${ticket.event_title}\n${ticket.ticket_type_name}\nCode: ${ticket.ticket_code}\nAdmits: ${ticket.people_count}\n\nPresent this code/QR at entry.`
