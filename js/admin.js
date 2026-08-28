@@ -8,6 +8,9 @@ function initAdminDashboard() {
     wireBrandManager();
     wireGalleryManager();
     wireProductManager();
+    if (typeof wireAdminEventModal === 'function') wireAdminEventModal();
+    if (typeof wireTicketScanner === 'function') wireTicketScanner();
+    if (typeof wireTicketingSubtabs === 'function') wireTicketingSubtabs();
     adminInitialized = true;
   }
   loadAdminInquiries();
@@ -424,6 +427,7 @@ async function loadAdminBrands() {
       <p class="admin-row-sub">${escapeHtmlAdmin(b.tagline || '')}</p>
       <div class="admin-form-actions" style="justify-content:center; margin-top:0.6rem;">
         <button class="btn-secondary admin-edit-brand-btn" data-id="${b.id}">Edit</button>
+        <button class="btn-secondary admin-event-btn" data-id="${b.id}">Event & Tickets</button>
         <button class="btn-secondary admin-delete-brand-btn" data-id="${b.id}">Delete</button>
       </div>
     </div>
@@ -452,6 +456,13 @@ async function loadAdminBrands() {
       loadAdminBrands();
       loadAdminStats();
       if (typeof loadBrands === 'function') loadBrands();
+    });
+  });
+
+  list.querySelectorAll('.admin-event-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const b = data.find((item) => String(item.id) === btn.dataset.id);
+      if (b && typeof openAdminEventModal === 'function') openAdminEventModal(b);
     });
   });
 }

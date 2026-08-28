@@ -956,3 +956,42 @@ select option {
   padding: 0.4rem 0.9rem;
   border-radius: var(--radius-pill);
 }
+
+/* ============================================
+   TICKETING
+   ============================================ */
+.brand-modal-divider { border: none; border-top: 1px solid var(--card-border); margin: 1.5rem 0; }
+.event-title { font-family: var(--font-heading); font-size: 1.3rem; margin: 0.5rem 0 0.3rem; }
+.event-meta { font-size: 0.85rem; color: var(--gold-accent); margin-bottom: 0.6rem; }
+.event-description { color: var(--color-white-muted); font-size: 0.9rem; margin-bottom: 1.2rem; }
+
+.ticket-types-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.ticket-type-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.2rem; gap: 1rem; flex-wrap: wrap; }
+.ticket-type-row.ticket-unavailable { opacity: 0.55; }
+.ticket-type-name { font-weight: 600; }
+.ticket-type-meta { font-size: 0.8rem; color: var(--color-white-muted); margin-top: 0.2rem; }
+.ticket-type-flag { font-size: 0.75rem; margin-top: 0.3rem; color: #ff8080; }
+.ticket-type-remaining { color: var(--gold-accent); }
+
+.ticket-confirmation { text-align: center; }
+.confirmation-qr { display: flex; justify-content: center; margin: 1.2rem 0; }
+.confirmation-qr canvas { border-radius: 8px; }
+.confirmation-code { font-family: var(--font-heading); font-size: 1.1rem; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+.confirmation-details { color: var(--color-white-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+.admin-event-modal-content { max-width: min(90vw, 700px); max-height: 85vh; overflow-y: auto; }
+
+.admin-subtabs { margin-bottom: 1.5rem; }
+.admin-subtab {
+  background: transparent; border: 1px solid var(--card-border); color: var(--color-white-muted);
+  padding: 0.5rem 1.1rem; border-radius: var(--radius-pill); font-size: 0.8rem; cursor: pointer;
+}
+.admin-subtab.active { background: var(--gold-gradient); color: #000; font-weight: 600; border-color: transparent; }
+.admin-subtab-content[hidden] { display: none; }
+
+.qr-reader { max-width: 400px; margin: 0 auto 1rem; border-radius: var(--radius-card); overflow: hidden; }
+.scan-result { margin-top: 1rem; }
+.scan-result-card { padding: 1rem 1.2rem; border-radius: var(--radius-card); font-size: 0.9rem; line-height: 1.5; }
+.scan-success { background: rgba(80, 200, 120, 0.12); border: 1px solid rgba(80, 200, 120, 0.4); color: #8fe0a8; }
+.scan-warning { background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.4); color: var(--gold-accent); }
+.scan-error { background: rgba(255, 100, 100, 0.12); border: 1px solid rgba(255, 100, 100, 0.4); color: #ff8080; }

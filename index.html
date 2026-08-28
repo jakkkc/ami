@@ -16,6 +16,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -192,6 +194,14 @@
     <h3 id="brand-modal-name" class="brand-modal-name gold-text"></h3>
     <p id="brand-modal-description" class="brand-modal-description"></p>
     <ul id="brand-modal-highlights" class="brand-modal-highlights"></ul>
+    <div id="brand-modal-tickets" class="brand-modal-tickets" hidden>
+      <hr class="brand-modal-divider">
+      <p class="eyebrow">Upcoming Event</p>
+      <h4 id="event-title" class="event-title"></h4>
+      <p id="event-meta" class="event-meta"></p>
+      <p id="event-description" class="event-description"></p>
+      <div id="ticket-types-list" class="ticket-types-list"></div>
+    </div>
   </div>
 </div>
 
@@ -390,6 +400,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="inquiries">Inquiries</button>
         <button class="admin-tab" data-tab="brands">Experiences</button>
+        <button class="admin-tab" data-tab="ticketing">Ticketing</button>
         <button class="admin-tab" data-tab="gallery">Gallery Manager</button>
         <button class="admin-tab" data-tab="products">Products</button>
         <button class="admin-tab" data-tab="stats">Stats</button>
@@ -475,7 +486,156 @@
         </div>
       </div>
 
+      <div id="admin-tab-ticketing" class="admin-tab-content" hidden>
+        <div class="admin-tabs admin-subtabs">
+          <button class="admin-subtab active" data-subtab="scan">Scan Ticket</button>
+          <button class="admin-subtab" data-subtab="sales">All Tickets</button>
+        </div>
+        <div id="admin-subtab-scan" class="admin-subtab-content">
+          <div id="qr-reader" class="qr-reader"></div>
+          <button id="start-scanner-btn" class="btn-primary">Start Camera Scanner</button>
+          <div id="scan-result" class="scan-result"></div>
+        </div>
+        <div id="admin-subtab-sales" class="admin-subtab-content" hidden>
+          <div id="admin-tickets-list"></div>
+        </div>
+      </div>
+
     </div>
+  </div>
+</div>
+
+<!-- Ticket Purchase Modal -->
+<div id="ticket-purchase-modal" class="lightbox" hidden>
+  <button class="lightbox-close ticket-modal-close" data-modal="ticket-purchase-modal" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card">
+    <p class="eyebrow">Get Your Ticket</p>
+    <h3 id="purchase-ticket-type-name" class="brand-modal-name gold-text"></h3>
+    <form id="ticket-purchase-form" class="admin-login-form">
+      <input type="hidden" id="purchase-ticket-type-id">
+      <div class="form-row"><label for="buyer-name">Full Name</label><input type="text" id="buyer-name" required></div>
+      <div class="form-row"><label for="buyer-whatsapp">WhatsApp Number</label><input type="tel" id="buyer-whatsapp" placeholder="2547XXXXXXXX" required></div>
+      <p id="ticket-purchase-error" class="admin-error" hidden></p>
+      <button type="submit" class="btn-primary form-submit-btn">Get Ticket</button>
+    </form>
+  </div>
+</div>
+
+<!-- Ticket Confirmation Modal -->
+<div id="ticket-confirmation-modal" class="lightbox" hidden>
+  <button class="lightbox-close ticket-modal-close" data-modal="ticket-confirmation-modal" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card ticket-confirmation">
+    <p class="eyebrow">Ticket Confirmed &#10024;</p>
+    <h3 id="confirmation-event-title" class="brand-modal-name gold-text"></h3>
+    <div id="confirmation-qr" class="confirmation-qr"></div>
+    <p id="confirmation-code" class="confirmation-code"></p>
+    <p id="confirmation-details" class="confirmation-details"></p>
+    <a id="confirmation-whatsapp-btn" class="btn-primary" href="#" target="_blank" rel="noopener">Share on WhatsApp</a>
+  </div>
+</div>
+
+<!-- Admin: Manage Event & Ticket Types -->
+<div id="admin-event-modal" class="lightbox" hidden>
+  <button class="lightbox-close" id="admin-event-modal-close" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card admin-event-modal-content">
+    <p class="eyebrow">Manage Event</p>
+    <h3 id="admin-event-brand-name" class="brand-modal-name gold-text"></h3>
+
+    <form id="admin-event-form" class="admin-inline-form admin-product-form">
+      <input type="hidden" id="admin-event-brand-id">
+      <input type="text" id="admin-event-title" placeholder="Event title">
+      <input type="datetime-local" id="admin-event-date">
+      <input type="text" id="admin-event-location" placeholder="Location">
+      <textarea id="admin-event-description" placeholder="Event description" rows="3"></textarea>
+      <label class="admin-toggle"><input type="checkbox" id="admin-event-active"> Ticket sales are live on the site</label>
+      <button type="submit" class="btn-primary">Save Event Details</button>
+    </form>
+
+    <hr class="brand-modal-divider">
+    <p class="eyebrow">Ticket Types</p>
+    <button id="admin-add-ticket-type-btn" class="btn-primary">+ Add Ticket Type</button>
+    <div id="admin-ticket-type-form-wrap" hidden>
+      <form id="admin-ticket-type-form" class="admin-inline-form admin-product-form">
+        <input type="hidden" id="ticket-type-id">
+        <input type="text" id="ticket-type-name" placeholder="e.g. Early Bird - Couple" required>
+        <input type="number" id="ticket-type-price" placeholder="Price (KES)" step="0.01" required>
+        <input type="number" id="ticket-type-people" placeholder="People admitted per ticket" min="1" value="1" required>
+        <input type="number" id="ticket-type-quantity" placeholder="Quantity available" min="1" required>
+        <div class="form-row"><label for="ticket-type-expires">Early bird cutoff (optional)</label><input type="datetime-local" id="ticket-type-expires"></div>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn-primary">Save Ticket Type</button>
+          <button type="button" id="ticket-type-cancel-btn" class="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+    <div id="admin-ticket-types-list" class="admin-ticket-types-list"></div>
+  </div>
+</div>
+
+<!-- Ticket Purchase Modal -->
+<div id="ticket-purchase-modal" class="lightbox" hidden>
+  <button class="lightbox-close ticket-modal-close" data-modal="ticket-purchase-modal" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card">
+    <p class="eyebrow">Get Your Ticket</p>
+    <h3 id="purchase-ticket-type-name" class="brand-modal-name gold-text"></h3>
+    <form id="ticket-purchase-form" class="admin-login-form">
+      <input type="hidden" id="purchase-ticket-type-id">
+      <div class="form-row"><label for="buyer-name">Full Name</label><input type="text" id="buyer-name" required></div>
+      <div class="form-row"><label for="buyer-whatsapp">WhatsApp Number</label><input type="tel" id="buyer-whatsapp" placeholder="2547XXXXXXXX" required></div>
+      <p id="ticket-purchase-error" class="admin-error" hidden></p>
+      <button type="submit" class="btn-primary form-submit-btn">Get Ticket</button>
+    </form>
+  </div>
+</div>
+
+<!-- Ticket Confirmation Modal -->
+<div id="ticket-confirmation-modal" class="lightbox" hidden>
+  <button class="lightbox-close ticket-modal-close" data-modal="ticket-confirmation-modal" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card ticket-confirmation">
+    <p class="eyebrow">Ticket Confirmed &#10024;</p>
+    <h3 id="confirmation-event-title" class="brand-modal-name gold-text"></h3>
+    <div id="confirmation-qr" class="confirmation-qr"></div>
+    <p id="confirmation-code" class="confirmation-code"></p>
+    <p id="confirmation-details" class="confirmation-details"></p>
+    <a id="confirmation-whatsapp-btn" class="btn-primary" href="#" target="_blank" rel="noopener">Share on WhatsApp</a>
+  </div>
+</div>
+
+<!-- Admin: Manage Event & Ticket Types -->
+<div id="admin-event-modal" class="lightbox" hidden>
+  <button class="lightbox-close" id="admin-event-modal-close" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card admin-event-modal-content">
+    <p class="eyebrow">Manage Event</p>
+    <h3 id="admin-event-brand-name" class="brand-modal-name gold-text"></h3>
+
+    <form id="admin-event-form" class="admin-inline-form admin-product-form">
+      <input type="hidden" id="admin-event-brand-id">
+      <input type="text" id="admin-event-title" placeholder="Event title">
+      <input type="datetime-local" id="admin-event-date">
+      <input type="text" id="admin-event-location" placeholder="Location">
+      <textarea id="admin-event-description" placeholder="Event description" rows="3"></textarea>
+      <label class="admin-toggle"><input type="checkbox" id="admin-event-active"> Ticket sales are live on the site</label>
+      <button type="submit" class="btn-primary">Save Event Details</button>
+    </form>
+
+    <hr class="brand-modal-divider">
+    <p class="eyebrow">Ticket Types</p>
+    <button id="admin-add-ticket-type-btn" class="btn-primary">+ Add Ticket Type</button>
+    <div id="admin-ticket-type-form-wrap" hidden>
+      <form id="admin-ticket-type-form" class="admin-inline-form admin-product-form">
+        <input type="hidden" id="ticket-type-id">
+        <input type="text" id="ticket-type-name" placeholder="e.g. Early Bird - Couple" required>
+        <input type="number" id="ticket-type-price" placeholder="Price (KES)" step="0.01" required>
+        <input type="number" id="ticket-type-people" placeholder="People admitted per ticket" min="1" value="1" required>
+        <input type="number" id="ticket-type-quantity" placeholder="Quantity available" min="1" required>
+        <div class="form-row"><label for="ticket-type-expires">Early bird cutoff (optional)</label><input type="datetime-local" id="ticket-type-expires"></div>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn-primary">Save Ticket Type</button>
+          <button type="button" id="ticket-type-cancel-btn" class="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+    <div id="admin-ticket-types-list" class="admin-ticket-types-list"></div>
   </div>
 </div>
 
@@ -503,6 +663,8 @@
 <script src="/js/contact.js"></script>
 <script src="/js/auth.js"></script>
 <script src="/js/admin.js"></script>
+<script src="/js/tickets.js"></script>
+<script src="/js/admin-tickets.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>
