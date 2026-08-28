@@ -1143,3 +1143,57 @@ select option {
 
 /* --- Admin panel section spacing rhythm --- */
 .admin-tab-content > *:first-child { margin-top: 0; }
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.site-footer {
+  background: var(--color-surface);
+  border-top: 1px solid rgba(212,175,55,0.15);
+  padding: 4rem 0 2rem;
+  margin-top: 4rem;
+}
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+.footer-logo { height: 48px; width: auto; opacity: 0.9; }
+.footer-tagline {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--color-white-muted);
+}
+.footer-socials {
+  display: flex;
+  gap: 1.2rem;
+  margin: 0.5rem 0;
+}
+.footer-socials a,
+.footer-social-placeholder {
+  color: var(--gold-accent);
+  display: inline-flex;
+  transition: color var(--transition-base), opacity var(--transition-base);
+}
+.footer-socials a:hover { color: var(--color-white); }
+.footer-social-placeholder {
+  opacity: 0.35;
+  cursor: default;
+}
+.footer-copyright {
+  font-size: 0.8rem;
+  color: var(--color-white-muted);
+  margin-top: 1rem;
+}
+.footer-credit {
+  font-size: 0.75rem;
+  color: var(--gold-accent);
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity var(--transition-base);
+  margin-top: 0.3rem;
+}
+.footer-credit:hover { opacity: 1; }
