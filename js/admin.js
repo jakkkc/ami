@@ -14,6 +14,7 @@ function initAdminDashboard() {
   if (!adminInitialized) {
     safeInit(wireAdminTabs, 'wireAdminTabs');
     safeInit(wireBrandManager, 'wireBrandManager');
+    safeInit(typeof wireCategoryManager === 'function' ? wireCategoryManager : null, 'wireCategoryManager');
     safeInit(wireGalleryManager, 'wireGalleryManager');
     safeInit(wireProductManager, 'wireProductManager');
     safeInit(typeof wireAdminEventModal === 'function' ? wireAdminEventModal : null, 'wireAdminEventModal');
@@ -23,6 +24,7 @@ function initAdminDashboard() {
   }
   safeInit(loadAdminInquiries, 'loadAdminInquiries');
   safeInit(loadAdminBrands, 'loadAdminBrands');
+  safeInit(typeof loadAdminCategories === 'function' ? loadAdminCategories : null, 'loadAdminCategories');
   safeInit(loadAdminGallery, 'loadAdminGallery');
   safeInit(loadAdminProducts, 'loadAdminProducts');
   safeInit(loadAdminStats, 'loadAdminStats');
@@ -180,6 +182,7 @@ function wireProductManager() {
     form.reset();
     document.getElementById('product-id').value = '';
     document.getElementById('product-image-preview').hidden = true;
+    populateProductCategorySelect();
     formWrap.hidden = false;
   });
 
@@ -221,7 +224,7 @@ function wireProductManager() {
       name: document.getElementById('product-name').value.trim(),
       description: document.getElementById('product-description').value.trim(),
       price: parseFloat(document.getElementById('product-price').value) || null,
-      category: document.getElementById('product-category').value,
+      category_id: document.getElementById('product-category').value || null,
       image_url: imageUrl,
       in_stock: document.getElementById('product-in-stock').checked,
     };
@@ -243,7 +246,7 @@ function wireProductManager() {
     document.getElementById('product-image-preview').hidden = true;
     loadAdminProducts();
     loadAdminStats();
-    if (typeof loadShop === 'function') loadShop();
+    if (typeof loadShopCategories === 'function') loadShopCategories();
   });
 }
 
@@ -251,7 +254,7 @@ async function loadAdminProducts() {
   const list = document.getElementById('admin-products-list');
   list.innerHTML = '<p class="admin-loading">Loading…</p>';
 
-  const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+  const { data, error } = await supabaseClient.from('products').select('*, shop_categories(name)').order('created_at', { ascending: false });
 
   if (error) { list.innerHTML = `<p class="admin-error-msg">${escapeHtmlAdmin(error.message)}</p>`; return; }
   if (!data.length) { list.innerHTML = '<p class="admin-empty">No products yet.</p>'; return; }
@@ -260,7 +263,7 @@ async function loadAdminProducts() {
     <div class="admin-row glass-card" data-id="${p.id}">
       <div class="admin-row-main">
         <p class="admin-row-title">${escapeHtmlAdmin(p.name)} ${p.in_stock ? '' : '<span class="admin-oos-tag">Out of Stock</span>'}</p>
-        <p class="admin-row-sub">${escapeHtmlAdmin(p.category || '')} · KES ${p.price != null ? Number(p.price).toLocaleString('en-KE') : 'N/A'}</p>
+        <p class="admin-row-sub">${escapeHtmlAdmin((p.shop_categories && p.shop_categories.name) || 'Uncategorized')} · KES ${p.price != null ? Number(p.price).toLocaleString('en-KE') : 'N/A'}</p>
       </div>
       <div class="admin-row-actions">
         <label class="admin-toggle">
@@ -277,7 +280,7 @@ async function loadAdminProducts() {
       const { error } = await supabaseClient.from('products').update({ in_stock: toggle.checked }).eq('id', toggle.dataset.id);
       if (error) console.error(error.message);
       loadAdminProducts();
-      if (typeof loadShop === 'function') loadShop();
+      if (typeof loadShopCategories === 'function') loadShopCategories();
     });
   });
 
@@ -289,7 +292,7 @@ async function loadAdminProducts() {
       document.getElementById('product-name').value = p.name || '';
       document.getElementById('product-description').value = p.description || '';
       document.getElementById('product-price').value = p.price ?? '';
-      document.getElementById('product-category').value = p.category || '';
+      populateProductCategorySelect(p.category_id);
       document.getElementById('product-image-url').value = p.image_url || '';
       document.getElementById('product-in-stock').checked = p.in_stock !== false;
       const preview = document.getElementById('product-image-preview');
@@ -305,7 +308,7 @@ async function loadAdminProducts() {
       if (error) { alert('Delete failed: ' + error.message); return; }
       loadAdminProducts();
       loadAdminStats();
-      if (typeof loadShop === 'function') loadShop();
+      if (typeof loadShopCategories === 'function') loadShopCategories();
     });
   });
 }

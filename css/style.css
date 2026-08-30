@@ -1203,3 +1203,10 @@ select option {
   color: var(--color-white);
   text-decoration-color: var(--color-white);
 }
+
+/* ============================================
+   SHOP CATEGORIES
+   ============================================ */
+.category-modal-content { max-width: min(90vw, 700px); max-height: 85vh; overflow-y: auto; }
+.category-modal-content .shop-grid { margin-top: 1.5rem; }
+#admin-categories-section { margin-bottom: 2rem; }

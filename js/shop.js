@@ -1,68 +1,113 @@
-// AMI Designs & Events — Shop: fetch products from Supabase, filter, WhatsApp order
+// AMI Designs & Events — Shop: category tiles, drill down into a category's products
 
-let shopItems = [];
-let activeShopFilter = 'All';
+let shopCategories = [];
 
 const WHATSAPP_NUMBER = '254741063322';
 
-async function loadShop() {
-  const grid = document.getElementById('shop-grid');
-  const emptyMsg = document.getElementById('shop-empty');
+function escapeHtmlShop(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+async function loadShopCategories() {
+  const grid = document.getElementById('shop-categories-grid');
+  const emptyMsg = document.getElementById('shop-categories-empty');
+
+  const { data, error } = await supabaseClient
+    .from('shop_categories')
+    .select('id, name, description, image_url, created_at')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Shop categories load error:', error.message);
+    grid.innerHTML = '';
+    emptyMsg.hidden = false;
+    emptyMsg.textContent = 'Unable to load the shop right now.';
+    return;
+  }
+
+  shopCategories = data || [];
+  renderShopCategories();
+}
+
+function renderShopCategories() {
+  const grid = document.getElementById('shop-categories-grid');
+  const emptyMsg = document.getElementById('shop-categories-empty');
+
+  if (!shopCategories.length) {
+    grid.innerHTML = '';
+    emptyMsg.hidden = false;
+    return;
+  }
+  emptyMsg.hidden = true;
+
+  grid.innerHTML = shopCategories.map((c, i) => `
+    <div class="glass-card brand-card fade-up-scroll in-view" style="--delay:${i * 100}ms">
+      ${c.image_url ? `<div class="brand-card-img"><img src="${c.image_url}" alt="${escapeHtmlShop(c.name)}" loading="lazy"></div>` : '<div class="brand-card-img brand-card-img-placeholder"></div>'}
+      <div class="brand-card-body">
+        <h3 class="brand-card-name">${escapeHtmlShop(c.name)}</h3>
+        <p class="brand-card-excerpt">${escapeHtmlShop(c.description || '')}</p>
+        <button class="btn-secondary category-view-products-btn" data-id="${c.id}">View Products</button>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.category-view-products-btn').forEach((btn) => {
+    btn.addEventListener('click', () => openCategoryModal(btn.dataset.id));
+  });
+}
+
+async function openCategoryModal(categoryId) {
+  const category = shopCategories.find((c) => String(c.id) === String(categoryId));
+  if (!category) return;
+
+  document.getElementById('category-modal-name').textContent = category.name || '';
+  document.getElementById('category-modal-description').textContent = category.description || '';
+
+  const grid = document.getElementById('category-products-grid');
+  const emptyMsg = document.getElementById('category-products-empty');
+  grid.innerHTML = '<div class="gallery-skeleton"></div><div class="gallery-skeleton"></div>';
+  emptyMsg.hidden = true;
+
+  document.getElementById('category-products-modal').hidden = false;
+  document.body.style.overflow = 'hidden';
 
   const { data, error } = await supabaseClient
     .from('products')
-    .select('id, name, description, price, category, image_url, in_stock, created_at')
+    .select('id, name, description, price, image_url, in_stock, created_at')
+    .eq('category_id', categoryId)
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Shop load error:', error.message);
     grid.innerHTML = '';
     emptyMsg.hidden = false;
-    emptyMsg.textContent = 'Unable to load products right now. Please try again shortly.';
+    emptyMsg.textContent = 'Unable to load products right now.';
     return;
   }
 
-  shopItems = data || [];
-  renderShop();
-}
-
-function renderShop() {
-  const grid = document.getElementById('shop-grid');
-  const emptyMsg = document.getElementById('shop-empty');
-
-  const filtered = activeShopFilter === 'All'
-    ? shopItems
-    : shopItems.filter((item) => item.category === activeShopFilter);
-
-  if (filtered.length === 0) {
+  if (!data.length) {
     grid.innerHTML = '';
     emptyMsg.hidden = false;
-    emptyMsg.textContent = shopItems.length === 0
-      ? 'No products listed yet — check back soon.'
-      : `No products in "${activeShopFilter}" yet.`;
+    emptyMsg.textContent = 'No products in this category yet.';
     return;
   }
 
-  emptyMsg.hidden = true;
-  grid.innerHTML = filtered.map((item, i) => {
-    const priceFormatted = item.price != null
-      ? `KES ${Number(item.price).toLocaleString('en-KE')}`
-      : '';
+  grid.innerHTML = data.map((item, i) => {
+    const priceFormatted = item.price != null ? `KES ${Number(item.price).toLocaleString('en-KE')}` : '';
     const outOfStock = item.in_stock === false;
-    const waMessage = encodeURIComponent(
-      `Hi AMI Designs! I'd like to order: ${item.name} — ${priceFormatted}. Please confirm availability.`
-    );
+    const waMessage = encodeURIComponent(`Hi AMI Designs! I'd like to order: ${item.name} — ${priceFormatted}. Please confirm availability.`);
 
     return `
       <div class="glass-card product-card fade-up-scroll in-view ${outOfStock ? 'out-of-stock' : ''}" style="--delay:${(i % 4) * 80}ms">
         <div class="product-image-wrap">
-          <img src="${item.image_url || ''}" alt="${escapeHtml(item.name || '')}" loading="lazy">
+          <img src="${item.image_url || ''}" alt="${escapeHtmlShop(item.name || '')}" loading="lazy">
           ${outOfStock ? '<span class="oos-badge">Out of Stock</span>' : ''}
         </div>
         <div class="product-body">
-          <h3 class="product-name">${escapeHtml(item.name || '')}</h3>
+          <h3 class="product-name">${escapeHtmlShop(item.name || '')}</h3>
           ${priceFormatted ? `<p class="product-price">${priceFormatted}</p>` : ''}
-          <p class="product-desc">${escapeHtml(item.description || '')}</p>
+          <p class="product-desc">${escapeHtmlShop(item.description || '')}</p>
           ${outOfStock
             ? `<button class="btn-secondary product-order-btn" disabled>Currently Unavailable</button>`
             : `<a class="btn-primary product-order-btn" href="https://wa.me/${WHATSAPP_NUMBER}?text=${waMessage}" target="_blank" rel="noopener">
@@ -78,21 +123,17 @@ function renderShop() {
   }).join('');
 }
 
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  loadShop();
+  loadShopCategories();
 
-  document.querySelectorAll('.shop-filter-tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.shop-filter-tab').forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      activeShopFilter = tab.dataset.filter;
-      renderShop();
-    });
+  document.getElementById('category-modal-close').addEventListener('click', () => {
+    document.getElementById('category-products-modal').hidden = true;
+    document.body.style.overflow = '';
+  });
+  document.getElementById('category-products-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'category-products-modal') {
+      document.getElementById('category-products-modal').hidden = true;
+      document.body.style.overflow = '';
+    }
   });
 });
