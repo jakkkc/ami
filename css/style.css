@@ -1224,3 +1224,31 @@ select option {
   border: 1px solid rgba(255, 100, 100, 0.5);
   color: #ff8080;
 }
+
+/* ============================================
+   DE-TEMPLATING PASS: reserve gold for positive/CTA signals only
+   ============================================ */
+.admin-oos-tag {
+  background: transparent;
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  color: #ff8080;
+}
+.oos-badge {
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 100, 100, 0.5);
+  color: #ff8080;
+}
+
+/* ============================================
+   DE-TEMPLATING PASS: reserve gold for positive/CTA signals only
+   ============================================ */
+.admin-oos-tag {
+  background: transparent;
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  color: #ff8080;
+}
+.oos-badge {
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 100, 100, 0.5);
+  color: #ff8080;
+}
