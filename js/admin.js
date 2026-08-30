@@ -74,7 +74,7 @@ async function loadAdminInquiries() {
     return `
       <div class="admin-row glass-card" data-id="${inq.id}">
         <div class="admin-row-main">
-          <p class="admin-row-title">${escapeHtmlAdmin(inq.name)} — ${escapeHtmlAdmin(inq.event_type || 'N/A')}</p>
+          <p class="admin-row-title">${escapeHtmlAdmin(inq.name)} · ${escapeHtmlAdmin(inq.event_type || 'N/A')}</p>
           <p class="admin-row-sub">${escapeHtmlAdmin(inq.email)} · ${escapeHtmlAdmin(inq.phone)}</p>
           <p class="admin-row-sub">Date: ${inq.event_date || 'N/A'} · Budget: ${escapeHtmlAdmin(inq.budget || 'N/A')}</p>
           <p class="admin-row-message">${escapeHtmlAdmin(inq.message || '')}</p>

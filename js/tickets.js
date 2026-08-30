@@ -110,7 +110,7 @@ async function submitTicketPurchase(e) {
 }
 
 function showTicketConfirmation(ticket, buyerWhatsapp) {
-  document.getElementById('confirmation-event-title').textContent = `${ticket.brand_name} — ${ticket.event_title}`;
+  document.getElementById('confirmation-event-title').textContent = `${ticket.brand_name} · ${ticket.event_title}`;
   document.getElementById('confirmation-code').textContent = `Ticket Code: ${ticket.ticket_code}`;
   document.getElementById('confirmation-details').textContent =
     `${ticket.ticket_type_name} · Admits ${ticket.people_count} · KES ${Number(ticket.price_paid).toLocaleString('en-KE')}` +
@@ -129,7 +129,7 @@ function showTicketConfirmation(ticket, buyerWhatsapp) {
   });
 
   const shareCaption =
-    `🎟️ AMI Designs & Events Ticket\n${ticket.brand_name} — ${ticket.event_title}\n${ticket.ticket_type_name}\nCode: ${ticket.ticket_code}\nAdmits: ${ticket.people_count}\n\nPresent this QR/code at entry.`;
+    `AMI Designs & Events Ticket\n${ticket.brand_name} · ${ticket.event_title}\n${ticket.ticket_type_name}\nCode: ${ticket.ticket_code}\nAdmits: ${ticket.people_count}\n\nPresent this QR/code at entry.`;
   const digits = buyerWhatsapp.replace(/[^0-9]/g, '');
   const fileName = `AMI-Ticket-${ticket.ticket_code}.png`;
 

@@ -49,7 +49,7 @@ function renderBrands() {
           <p class="brand-card-tagline eyebrow">${escapeHtmlBrands(b.tagline || '')}</p>
           <h3 class="brand-card-name">${escapeHtmlBrands(b.name)}</h3>
           <p class="brand-card-excerpt">${escapeHtmlBrands(excerpt)}</p>
-          ${b.event_active ? '<p class="ticket-type-remaining" style="margin-bottom:0.6rem;">🎟️ Tickets on sale</p>' : ''}
+          ${b.event_active ? '<p class="ticket-type-remaining" style="margin-bottom:0.6rem;">Tickets on sale</p>' : ''}
           <button class="btn-secondary brand-view-more" data-id="${b.id}">View More</button>
         </div>
       </div>

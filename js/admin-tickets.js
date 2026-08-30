@@ -195,7 +195,7 @@ async function loadAdminTicketSales() {
   list.innerHTML = data.map((t) => `
     <div class="admin-row glass-card">
       <div class="admin-row-main">
-        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} — ${escapeHtmlAdmin(t.code)} ${t.status === 'used' ? '<span class="admin-oos-tag">Used</span>' : ''}</p>
+        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} · ${escapeHtmlAdmin(t.code)} ${t.status === 'used' ? '<span class="admin-oos-tag">Used</span>' : ''}</p>
         <p class="admin-row-sub">${escapeHtmlAdmin((t.brands && t.brands.name) || '')} · ${escapeHtmlAdmin((t.ticket_types && t.ticket_types.name) || '')} · KES ${Number(t.price_paid).toLocaleString('en-KE')} · ${escapeHtmlAdmin(t.buyer_whatsapp)}</p>
       </div>
     </div>

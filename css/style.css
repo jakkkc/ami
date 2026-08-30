@@ -1210,3 +1210,17 @@ select option {
 .category-modal-content { max-width: min(90vw, 700px); max-height: 85vh; overflow-y: auto; }
 .category-modal-content .shop-grid { margin-top: 1.5rem; }
 #admin-categories-section { margin-bottom: 2rem; }
+
+/* ============================================
+   DE-TEMPLATING PASS: reserve gold for positive/CTA signals only
+   ============================================ */
+.admin-oos-tag {
+  background: transparent;
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  color: #ff8080;
+}
+.oos-badge {
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 100, 100, 0.5);
+  color: #ff8080;
+}

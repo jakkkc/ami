@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    showToast("Your inquiry has been received. We'll be in touch shortly. ✨");
+    showToast("Your inquiry has been received. We'll be in touch shortly.");
     form.reset();
   });
 });
