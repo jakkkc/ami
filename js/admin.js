@@ -48,6 +48,31 @@ function wireAdminTabs() {
 }
 
 /* ---------- INQUIRIES ---------- */
+function renderInquiryRow(inq) {
+  const waText = encodeURIComponent(`Hi ${inq.name}, thank you for reaching out to AMI Designs & Events regarding your ${inq.event_type || 'event'}. `);
+  const digits = (inq.phone || '').replace(/[^0-9]/g, '');
+  const waLink = digits ? `https://wa.me/${digits}?text=${waText}` : null;
+
+  return `
+    <div class="admin-row glass-card" data-id="${inq.id}">
+      <div class="admin-row-main">
+        <p class="admin-row-title">${escapeHtmlAdmin(inq.name)} · ${escapeHtmlAdmin(inq.event_type || 'N/A')}</p>
+        <p class="admin-row-sub">${escapeHtmlAdmin(inq.email)} · ${escapeHtmlAdmin(inq.phone)}</p>
+        <p class="admin-row-sub">Date: ${inq.event_date || 'N/A'} · Budget: ${escapeHtmlAdmin(inq.budget || 'N/A')}</p>
+        <p class="admin-row-message">${escapeHtmlAdmin(inq.message || '')}</p>
+      </div>
+      <div class="admin-row-actions">
+        <select class="inquiry-status-select" data-id="${inq.id}">
+          <option value="new" ${inq.status === 'new' ? 'selected' : ''}>New</option>
+          <option value="in_progress" ${inq.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+          <option value="closed" ${inq.status === 'closed' ? 'selected' : ''}>Closed</option>
+        </select>
+        ${waLink ? `<a class="btn-secondary admin-wa-btn" href="${waLink}" target="_blank" rel="noopener">WhatsApp Reply</a>` : ''}
+      </div>
+    </div>
+  `;
+}
+
 async function loadAdminInquiries() {
   const list = document.getElementById('admin-inquiries-list');
   list.innerHTML = '<p class="admin-loading">Loading inquiries…</p>';
@@ -66,27 +91,21 @@ async function loadAdminInquiries() {
     return;
   }
 
-  list.innerHTML = data.map((inq) => {
-    const waText = encodeURIComponent(`Hi ${inq.name}, thank you for reaching out to AMI Designs & Events regarding your ${inq.event_type || 'event'}. `);
-    const digits = (inq.phone || '').replace(/[^0-9]/g, '');
-    const waLink = digits ? `https://wa.me/${digits}?text=${waText}` : null;
+  const groups = [
+    { key: 'new', label: 'New' },
+    { key: 'in_progress', label: 'In Progress' },
+    { key: 'closed', label: 'Closed' },
+  ];
 
+  list.innerHTML = groups.map((g) => {
+    const rows = data.filter((inq) => (inq.status || 'new') === g.key);
     return `
-      <div class="admin-row glass-card" data-id="${inq.id}">
-        <div class="admin-row-main">
-          <p class="admin-row-title">${escapeHtmlAdmin(inq.name)} · ${escapeHtmlAdmin(inq.event_type || 'N/A')}</p>
-          <p class="admin-row-sub">${escapeHtmlAdmin(inq.email)} · ${escapeHtmlAdmin(inq.phone)}</p>
-          <p class="admin-row-sub">Date: ${inq.event_date || 'N/A'} · Budget: ${escapeHtmlAdmin(inq.budget || 'N/A')}</p>
-          <p class="admin-row-message">${escapeHtmlAdmin(inq.message || '')}</p>
+      <div class="admin-group">
+        <div class="admin-group-header">
+          <span>${g.label}</span>
+          <span class="admin-group-count">${rows.length}</span>
         </div>
-        <div class="admin-row-actions">
-          <select class="inquiry-status-select" data-id="${inq.id}">
-            <option value="new" ${inq.status === 'new' ? 'selected' : ''}>New</option>
-            <option value="in_progress" ${inq.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
-            <option value="closed" ${inq.status === 'closed' ? 'selected' : ''}>Closed</option>
-          </select>
-          ${waLink ? `<a class="btn-secondary admin-wa-btn" href="${waLink}" target="_blank" rel="noopener">WhatsApp Reply</a>` : ''}
-        </div>
+        ${rows.length ? rows.map(renderInquiryRow).join('') : '<p class="admin-empty admin-group-empty">None here.</p>'}
       </div>
     `;
   }).join('');
@@ -94,7 +113,8 @@ async function loadAdminInquiries() {
   list.querySelectorAll('.inquiry-status-select').forEach((sel) => {
     sel.addEventListener('change', async () => {
       const { error } = await supabaseClient.from('inquiries').update({ status: sel.value }).eq('id', sel.dataset.id);
-      if (error) console.error('Status update failed:', error.message);
+      if (error) { console.error('Status update failed:', error.message); return; }
+      loadAdminInquiries();
       loadAdminStats();
     });
   });

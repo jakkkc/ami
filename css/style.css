@@ -1252,3 +1252,30 @@ select option {
   border: 1px solid rgba(255, 100, 100, 0.5);
   color: #ff8080;
 }
+
+/* ============================================
+   ADMIN: grouped record sections
+   ============================================ */
+.admin-group { margin-bottom: 2rem; }
+.admin-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gold-accent);
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--card-border);
+}
+.admin-group-count {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--card-border);
+  color: var(--gold-accent);
+  font-size: 0.7rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+}
+.admin-group-empty { padding: 0.5rem 0; font-size: 0.85rem; }

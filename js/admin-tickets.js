@@ -180,6 +180,17 @@ async function handleScannedCode(code) {
 }
 
 /* ---------- SALES LIST ---------- */
+function renderTicketRow(t) {
+  return `
+    <div class="admin-row glass-card">
+      <div class="admin-row-main">
+        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} · ${escapeHtmlAdmin(t.code)} ${t.status === 'used' ? '<span class="admin-oos-tag">Used</span>' : ''}</p>
+        <p class="admin-row-sub">${escapeHtmlAdmin((t.brands && t.brands.name) || '')} · ${escapeHtmlAdmin((t.ticket_types && t.ticket_types.name) || '')} · KES ${Number(t.price_paid).toLocaleString('en-KE')} · ${escapeHtmlAdmin(t.buyer_whatsapp)}</p>
+      </div>
+    </div>
+  `;
+}
+
 async function loadAdminTicketSales() {
   const list = document.getElementById('admin-tickets-list');
   list.innerHTML = '<p class="admin-loading">Loading…</p>';
@@ -192,12 +203,21 @@ async function loadAdminTicketSales() {
   if (error) { list.innerHTML = `<p class="admin-error-msg">${escapeHtmlAdmin(error.message)}</p>`; return; }
   if (!data.length) { list.innerHTML = '<p class="admin-empty">No tickets sold yet.</p>'; return; }
 
-  list.innerHTML = data.map((t) => `
-    <div class="admin-row glass-card">
-      <div class="admin-row-main">
-        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} · ${escapeHtmlAdmin(t.code)} ${t.status === 'used' ? '<span class="admin-oos-tag">Used</span>' : ''}</p>
-        <p class="admin-row-sub">${escapeHtmlAdmin((t.brands && t.brands.name) || '')} · ${escapeHtmlAdmin((t.ticket_types && t.ticket_types.name) || '')} · KES ${Number(t.price_paid).toLocaleString('en-KE')} · ${escapeHtmlAdmin(t.buyer_whatsapp)}</p>
+  const valid = data.filter((t) => t.status !== 'used');
+  const used = data.filter((t) => t.status === 'used');
+
+  const groups = [
+    { rows: valid, label: 'Valid — Not Yet Used' },
+    { rows: used, label: 'Used — Checked In' },
+  ];
+
+  list.innerHTML = groups.map((g) => `
+    <div class="admin-group">
+      <div class="admin-group-header">
+        <span>${g.label}</span>
+        <span class="admin-group-count">${g.rows.length}</span>
       </div>
+      ${g.rows.length ? g.rows.map(renderTicketRow).join('') : '<p class="admin-empty admin-group-empty">None here.</p>'}
     </div>
   `).join('');
 }
