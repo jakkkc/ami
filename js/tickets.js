@@ -95,7 +95,11 @@ async function submitTicketPurchase(e) {
   try {
     const res = await fetch(`${SUPABASE_PROJECT_URL}/functions/v1/mpesa-stk-push`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify({ ticket_type_id: ticketTypeId, buyer_name: buyerName, buyer_whatsapp: buyerWhatsapp }),
     });
     const result = await res.json();
