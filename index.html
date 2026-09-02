@@ -566,6 +566,20 @@
   </div>
 </div>
 
+<!-- Payment Waiting Modal -->
+<div id="payment-waiting-modal" class="lightbox" hidden>
+  <div class="brand-modal-content glass-card ticket-confirmation">
+    <p class="eyebrow">Complete Payment</p>
+    <h3 class="brand-modal-name gold-text">Check Your Phone</h3>
+    <div class="payment-spinner"></div>
+    <p id="payment-waiting-text" class="confirmation-details">
+      Enter your M-Pesa PIN on the prompt sent to your phone to complete this purchase.
+    </p>
+    <p id="payment-waiting-error" class="admin-error" hidden></p>
+    <button id="payment-cancel-btn" class="btn-secondary" type="button" hidden>Close</button>
+  </div>
+</div>
+
 <!-- Ticket Confirmation Modal -->
 <div id="ticket-confirmation-modal" class="lightbox" hidden>
   <button class="lightbox-close ticket-modal-close" data-modal="ticket-confirmation-modal" aria-label="Close">&times;</button>

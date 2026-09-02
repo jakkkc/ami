@@ -78,6 +78,8 @@ function openTicketPurchaseModal(ticketTypeId, ticketTypeName, eventTitle) {
   document.body.style.overflow = 'hidden';
 }
 
+const SUPABASE_PROJECT_URL = 'https://yfckrixgbzgyprmdcfte.supabase.co';
+
 async function submitTicketPurchase(e) {
   e.preventDefault();
   const ticketTypeId = document.getElementById('purchase-ticket-type-id').value;
@@ -88,25 +90,113 @@ async function submitTicketPurchase(e) {
 
   const submitBtn = document.querySelector('#ticket-purchase-form button[type="submit"]');
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Processing…';
+  submitBtn.textContent = 'Starting payment…';
 
-  const { data, error } = await supabaseClient.rpc('purchase_ticket', {
-    p_ticket_type_id: ticketTypeId,
-    p_buyer_name: buyerName,
-    p_buyer_whatsapp: buyerWhatsapp,
-  });
+  try {
+    const res = await fetch(`${SUPABASE_PROJECT_URL}/functions/v1/mpesa-stk-push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticket_type_id: ticketTypeId, buyer_name: buyerName, buyer_whatsapp: buyerWhatsapp }),
+    });
+    const result = await res.json();
 
-  submitBtn.disabled = false;
-  submitBtn.textContent = 'Get Ticket';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Get Ticket';
 
-  if (error || !data || !data.length) {
-    errorEl.textContent = (error && error.message) || 'Something went wrong. Please try again.';
+    if (!res.ok || !result.checkout_request_id) {
+      errorEl.textContent = result.error || 'Could not start payment. Please try again.';
+      errorEl.hidden = false;
+      return;
+    }
+
+    document.getElementById('ticket-purchase-modal').hidden = true;
+    showPaymentWaiting(result.checkout_request_id, buyerWhatsapp);
+  } catch (err) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Get Ticket';
+    errorEl.textContent = 'Network error. Please check your connection and try again.';
     errorEl.hidden = false;
-    return;
   }
+}
 
-  document.getElementById('ticket-purchase-modal').hidden = true;
-  showTicketConfirmation(data[0], buyerWhatsapp);
+function showPaymentWaiting(checkoutRequestId, buyerWhatsapp) {
+  const modal = document.getElementById('payment-waiting-modal');
+  const textEl = document.getElementById('payment-waiting-text');
+  const errorEl = document.getElementById('payment-waiting-error');
+  const closeBtn = document.getElementById('payment-cancel-btn');
+
+  textEl.textContent = 'Enter your M-Pesa PIN on the prompt sent to your phone to complete this purchase.';
+  textEl.hidden = false;
+  errorEl.hidden = true;
+  closeBtn.hidden = true;
+  modal.querySelector('.payment-spinner').hidden = false;
+
+  modal.hidden = false;
+  document.body.style.overflow = 'hidden';
+
+  let attempts = 0;
+  const maxAttempts = 30; // ~90 seconds at 3s intervals
+
+  const poll = setInterval(async () => {
+    attempts++;
+
+    const { data, error } = await supabaseClient.rpc('get_transaction_status', {
+      p_checkout_request_id: checkoutRequestId,
+    });
+
+    if (error) {
+      console.error('Status check error:', error.message);
+    } else if (data && data.length) {
+      const status = data[0].status;
+
+      if (status === 'success') {
+        clearInterval(poll);
+        const { data: ticketData } = await supabaseClient.rpc('get_ticket_confirmation', {
+          p_ticket_id: data[0].ticket_id,
+        });
+        modal.hidden = true;
+        if (ticketData && ticketData.length) {
+          showTicketConfirmation(ticketData[0], buyerWhatsapp);
+        }
+        return;
+      }
+
+      if (status === 'failed') {
+        clearInterval(poll);
+        modal.querySelector('.payment-spinner').hidden = true;
+        textEl.hidden = true;
+        errorEl.textContent = data[0].result_desc || 'Payment was not completed. No charge was made — please try again.';
+        errorEl.hidden = false;
+        closeBtn.hidden = false;
+        return;
+      }
+
+      if (status === 'paid_no_ticket') {
+        clearInterval(poll);
+        modal.querySelector('.payment-spinner').hidden = true;
+        textEl.hidden = true;
+        errorEl.textContent = 'Payment was received, but we could not issue your ticket automatically. Please contact us on WhatsApp with your M-Pesa message so we can sort this out.';
+        errorEl.hidden = false;
+        closeBtn.hidden = false;
+        return;
+      }
+    }
+
+    if (attempts >= maxAttempts) {
+      clearInterval(poll);
+      modal.querySelector('.payment-spinner').hidden = true;
+      textEl.hidden = true;
+      errorEl.textContent = "This is taking longer than expected. If you completed the M-Pesa prompt, please contact us on WhatsApp with your confirmation message — otherwise no charge was made.";
+      errorEl.hidden = false;
+      closeBtn.hidden = false;
+    }
+  }, 3000);
+
+  closeBtn.onclick = () => {
+    clearInterval(poll);
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  };
 }
 
 function showTicketConfirmation(ticket, buyerWhatsapp) {
