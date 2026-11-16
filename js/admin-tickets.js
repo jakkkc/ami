@@ -184,7 +184,7 @@ function renderTicketRow(t) {
   return `
     <div class="admin-row glass-card">
       <div class="admin-row-main">
-        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} · ${escapeHtmlAdmin(t.code)} ${t.status === 'used' ? '<span class="admin-oos-tag">Used</span>' : ''}</p>
+        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} · ${escapeHtmlAdmin(t.code)} ${t.status === 'used' ? '<span class="admin-oos-tag">Used</span>' : ''}${t.status === 'pending' ? '<span class="admin-oos-tag">Pending</span>' : ''}</p>
         <p class="admin-row-sub">${escapeHtmlAdmin((t.brands && t.brands.name) || '')} · ${escapeHtmlAdmin((t.ticket_types && t.ticket_types.name) || '')} · KES ${Number(t.price_paid).toLocaleString('en-KE')} · ${escapeHtmlAdmin(t.buyer_whatsapp)}</p>
       </div>
     </div>
@@ -203,10 +203,12 @@ async function loadAdminTicketSales() {
   if (error) { list.innerHTML = `<p class="admin-error-msg">${escapeHtmlAdmin(error.message)}</p>`; return; }
   if (!data.length) { list.innerHTML = '<p class="admin-empty">No tickets sold yet.</p>'; return; }
 
-  const valid = data.filter((t) => t.status !== 'used');
+  const pending = data.filter((t) => t.status === 'pending');
+  const valid = data.filter((t) => t.status === 'valid');
   const used = data.filter((t) => t.status === 'used');
 
   const groups = [
+    { rows: pending, label: 'Pending Approval' },
     { rows: valid, label: 'Valid — Not Yet Used' },
     { rows: used, label: 'Used — Checked In' },
   ];
@@ -230,6 +232,122 @@ function wireTicketingSubtabs() {
       document.querySelectorAll('.admin-subtab-content').forEach((c) => { c.hidden = true; });
       document.getElementById(`admin-subtab-${tab.dataset.subtab}`).hidden = false;
       if (tab.dataset.subtab === 'sales') loadAdminTicketSales();
+      if (tab.dataset.subtab === 'pending') loadAdminPendingTickets();
+      if (tab.dataset.subtab === 'issue') loadIssueTicketTypes();
     });
+  });
+  updatePendingBadge();
+}
+
+/* ---------- PENDING APPROVALS ---------- */
+async function updatePendingBadge() {
+  const badge = document.getElementById('pending-count-badge');
+  if (!badge) return;
+  const { count, error } = await supabaseClient
+    .from('tickets')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pending');
+  if (error) return;
+  badge.textContent = count || 0;
+  badge.hidden = !count;
+}
+
+async function loadAdminPendingTickets() {
+  const list = document.getElementById('admin-pending-list');
+  list.innerHTML = '<p class="admin-loading">Loading…</p>';
+
+  const { data, error } = await supabaseClient
+    .from('tickets')
+    .select('*, brands(name), ticket_types(name)')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: true });
+
+  if (error) { list.innerHTML = `<p class="admin-error-msg">${escapeHtmlAdmin(error.message)}</p>`; return; }
+  updatePendingBadge();
+  if (!data.length) { list.innerHTML = '<p class="admin-empty">No pending orders.</p>'; return; }
+
+  list.innerHTML = data.map((t) => `
+    <div class="admin-row glass-card pending-row" data-id="${t.id}">
+      <div class="admin-row-main">
+        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} · KES ${Number(t.price_paid).toLocaleString('en-KE')}</p>
+        <p class="admin-row-sub">M-Pesa code: <strong>${escapeHtmlAdmin(t.mpesa_code || '')}</strong> · ${escapeHtmlAdmin((t.brands && t.brands.name) || '')} · ${escapeHtmlAdmin((t.ticket_types && t.ticket_types.name) || '')}</p>
+        <p class="admin-row-sub">${escapeHtmlAdmin(t.buyer_whatsapp)} · ${new Date(t.created_at).toLocaleString('en-KE')}</p>
+      </div>
+      <div class="admin-row-actions">
+        <button class="btn-primary pending-approve-btn" data-id="${t.id}">Approve</button>
+        <button class="btn-danger pending-reject-btn" data-id="${t.id}">Reject</button>
+        <a class="btn-secondary" target="_blank" rel="noopener" href="https://wa.me/${encodeURIComponent(String(t.buyer_whatsapp).replace(/[^0-9]/g, ''))}?text=${encodeURIComponent('Hello ' + t.buyer_name + ', your AMI ticket is ready. Open the site, tap My Ticket and enter your WhatsApp number and M-Pesa code ' + (t.mpesa_code || '') + ' to get your QR ticket.')}">Message buyer</a>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.pending-approve-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Approve this ticket? Only do this after confirming the code and amount on your Till statement.')) return;
+      btn.disabled = true;
+      const { error: err } = await supabaseClient.rpc('approve_ticket', { p_ticket_id: btn.dataset.id });
+      if (err) { alert('Approve failed: ' + err.message); btn.disabled = false; return; }
+      loadAdminPendingTickets();
+    });
+  });
+
+  list.querySelectorAll('.pending-reject-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Reject this order? The buyer will not receive a ticket.')) return;
+      btn.disabled = true;
+      const { error: err } = await supabaseClient.rpc('reject_ticket', { p_ticket_id: btn.dataset.id });
+      if (err) { alert('Reject failed: ' + err.message); btn.disabled = false; return; }
+      loadAdminPendingTickets();
+    });
+  });
+}
+
+/* ---------- ISSUE TICKET (cash / WhatsApp sales) ---------- */
+async function loadIssueTicketTypes() {
+  const select = document.getElementById('issue-ticket-type');
+  const { data, error } = await supabaseClient
+    .from('ticket_types')
+    .select('id, name, price, quantity_limit, quantity_sold, brands(name)')
+    .order('name', { ascending: true });
+
+  if (error || !data || !data.length) {
+    select.innerHTML = '<option value="">No ticket types available</option>';
+    return;
+  }
+
+  select.innerHTML = '<option value="">Select ticket type</option>' + data.map((t) => {
+    const left = t.quantity_limit - t.quantity_sold;
+    const label = `${(t.brands && t.brands.name) || ''} · ${t.name} · KES ${Number(t.price).toLocaleString('en-KE')} (${left} left)`;
+    return `<option value="${t.id}" ${left <= 0 ? 'disabled' : ''}>${escapeHtmlAdmin(label)}</option>`;
+  }).join('');
+}
+
+function wireAdminIssueTicket() {
+  const form = document.getElementById('admin-issue-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorEl = document.getElementById('issue-error');
+    errorEl.hidden = true;
+
+    const whatsapp = document.getElementById('issue-buyer-whatsapp').value.trim();
+    const { data, error } = await supabaseClient.rpc('admin_issue_ticket', {
+      p_ticket_type_id: document.getElementById('issue-ticket-type').value,
+      p_buyer_name: document.getElementById('issue-buyer-name').value.trim(),
+      p_buyer_whatsapp: whatsapp,
+      p_method: document.getElementById('issue-method').value,
+      p_note: document.getElementById('issue-note').value.trim(),
+    });
+
+    if (error || !data || !data.length) {
+      errorEl.textContent = (error && error.message) || 'Could not issue ticket.';
+      errorEl.hidden = false;
+      return;
+    }
+
+    form.reset();
+    loadIssueTicketTypes();
+    showTicketConfirmation(data[0], whatsapp);
   });
 }

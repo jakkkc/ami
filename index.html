@@ -19,6 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/luxury.css">
 </head>
 <body>
 
@@ -384,6 +385,8 @@
       </span>
     </div>
 
+    <p class="footer-tagline"><a href="#ticket" id="footer-my-ticket-link">My Ticket</a></p>
+
     <p class="footer-copyright">&copy; 2025 AMI Designs & Events. All rights reserved.</p>
 
     <a href="https://jac-s-hub.vercel.app/" target="_blank" rel="noopener" class="footer-credit">
@@ -534,12 +537,36 @@
       <div id="admin-tab-ticketing" class="admin-tab-content" hidden>
         <div class="admin-tabs admin-subtabs">
           <button class="admin-subtab active" data-subtab="scan">Scan Ticket</button>
+          <button class="admin-subtab" data-subtab="pending">Pending <span id="pending-count-badge" class="admin-group-count" hidden>0</span></button>
+          <button class="admin-subtab" data-subtab="issue">Issue Ticket</button>
           <button class="admin-subtab" data-subtab="sales">All Tickets</button>
         </div>
         <div id="admin-subtab-scan" class="admin-subtab-content">
           <div id="qr-reader" class="qr-reader"></div>
           <button id="start-scanner-btn" class="btn-primary">Start Camera Scanner</button>
           <div id="scan-result" class="scan-result"></div>
+        </div>
+        <div id="admin-subtab-pending" class="admin-subtab-content" hidden>
+          <p class="admin-hint">Check each M-Pesa code and amount against your Till statement before approving.</p>
+          <div id="admin-pending-list"></div>
+        </div>
+        <div id="admin-subtab-issue" class="admin-subtab-content" hidden>
+          <p class="admin-hint">For cash, WhatsApp or in-person sales. The ticket is valid immediately.</p>
+          <form id="admin-issue-form" class="admin-inline-form admin-product-form">
+            <select id="issue-ticket-type" required>
+              <option value="">Loading ticket types…</option>
+            </select>
+            <input type="text" id="issue-buyer-name" placeholder="Buyer name" required>
+            <input type="tel" id="issue-buyer-whatsapp" placeholder="WhatsApp 2547XXXXXXXX">
+            <select id="issue-method">
+              <option value="cash">Cash</option>
+              <option value="mpesa_manual">M-Pesa (checked by me)</option>
+              <option value="other">Other</option>
+            </select>
+            <input type="text" id="issue-note" placeholder="Note (optional)">
+            <p id="issue-error" class="admin-error" hidden></p>
+            <button type="submit" class="btn-primary">Issue Ticket</button>
+          </form>
         </div>
         <div id="admin-subtab-sales" class="admin-subtab-content" hidden>
           <div id="admin-tickets-list"></div>
@@ -558,10 +585,51 @@
     <h3 id="purchase-ticket-type-name" class="brand-modal-name gold-text"></h3>
     <form id="ticket-purchase-form" class="admin-login-form">
       <input type="hidden" id="purchase-ticket-type-id">
+      <input type="hidden" id="purchase-ticket-price">
+      <div id="manual-pay-instructions" class="pay-instructions" hidden>
+        <p class="eyebrow">How to pay</p>
+        <ol>
+          <li>Open M-Pesa, then Lipa na M-Pesa, then Buy Goods and Services.</li>
+          <li>Till number: <strong id="pay-till-number"></strong> (<span id="pay-till-name"></span>)</li>
+          <li>Amount: <strong id="pay-amount"></strong></li>
+          <li>Enter the 10-character confirmation code from the M-Pesa message below.</li>
+        </ol>
+      </div>
       <div class="form-row"><label for="buyer-name">Full Name</label><input type="text" id="buyer-name" required></div>
       <div class="form-row"><label for="buyer-whatsapp">WhatsApp Number</label><input type="tel" id="buyer-whatsapp" placeholder="2547XXXXXXXX" required></div>
+      <div class="form-row" id="mpesa-code-row" hidden><label for="buyer-mpesa-code">M-Pesa Confirmation Code</label><input type="text" id="buyer-mpesa-code" placeholder="e.g. SGH7K2L9QX" maxlength="10" autocapitalize="characters" autocomplete="off"></div>
       <p id="ticket-purchase-error" class="admin-error" hidden></p>
       <button type="submit" class="btn-primary form-submit-btn">Get Ticket</button>
+    </form>
+  </div>
+</div>
+
+<!-- Order Received (manual payment) Modal -->
+<div id="order-received-modal" class="lightbox" hidden>
+  <button class="lightbox-close ticket-modal-close" data-modal="order-received-modal" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card ticket-confirmation">
+    <p class="eyebrow">Order Received</p>
+    <h3 class="brand-modal-name gold-text">Awaiting Confirmation</h3>
+    <p class="confirmation-details">
+      We will check your payment and confirm your ticket shortly. Once approved, open
+      <strong>My Ticket</strong> on this site and enter your WhatsApp number and M-Pesa code to get your QR ticket.
+    </p>
+    <a id="order-received-whatsapp" class="btn-primary" href="#" target="_blank" rel="noopener">Notify us on WhatsApp</a>
+    <button id="order-received-lookup-btn" class="btn-secondary" type="button" style="margin-top:0.6rem;">Open My Ticket</button>
+  </div>
+</div>
+
+<!-- My Ticket Lookup Modal -->
+<div id="my-ticket-modal" class="lightbox" hidden>
+  <button class="lightbox-close ticket-modal-close" data-modal="my-ticket-modal" aria-label="Close">&times;</button>
+  <div class="brand-modal-content glass-card">
+    <p class="eyebrow">My Ticket</p>
+    <h3 class="brand-modal-name gold-text">Find Your Ticket</h3>
+    <form id="my-ticket-form" class="admin-login-form">
+      <div class="form-row"><label for="lookup-whatsapp">WhatsApp Number</label><input type="tel" id="lookup-whatsapp" placeholder="2547XXXXXXXX" required></div>
+      <div class="form-row"><label for="lookup-mpesa-code">M-Pesa Confirmation Code</label><input type="text" id="lookup-mpesa-code" maxlength="10" autocapitalize="characters" autocomplete="off" required></div>
+      <p id="my-ticket-message" class="confirmation-details" hidden></p>
+      <button type="submit" class="btn-primary form-submit-btn">Find Ticket</button>
     </form>
   </div>
 </div>
@@ -584,11 +652,8 @@
 <div id="ticket-confirmation-modal" class="lightbox" hidden>
   <button class="lightbox-close ticket-modal-close" data-modal="ticket-confirmation-modal" aria-label="Close">&times;</button>
   <div class="brand-modal-content glass-card ticket-confirmation">
-    <p class="eyebrow">Ticket Confirmed</p>
-    <h3 id="confirmation-event-title" class="brand-modal-name gold-text"></h3>
+    <p class="eyebrow">Your Ticket</p>
     <div id="confirmation-qr" class="confirmation-qr"></div>
-    <p id="confirmation-code" class="confirmation-code"></p>
-    <p id="confirmation-details" class="confirmation-details"></p>
     <button id="confirmation-whatsapp-btn" class="btn-primary" type="button">Share on WhatsApp</button>
     <button id="confirmation-download-btn" class="btn-secondary" type="button" style="margin-top:0.6rem;">Download Ticket Image</button>
   </div>

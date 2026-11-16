@@ -20,6 +20,7 @@ function initAdminDashboard() {
     safeInit(typeof wireAdminEventModal === 'function' ? wireAdminEventModal : null, 'wireAdminEventModal');
     safeInit(typeof wireTicketScanner === 'function' ? wireTicketScanner : null, 'wireTicketScanner');
     safeInit(typeof wireTicketingSubtabs === 'function' ? wireTicketingSubtabs : null, 'wireTicketingSubtabs');
+    safeInit(typeof wireAdminIssueTicket === 'function' ? wireAdminIssueTicket : null, 'wireAdminIssueTicket');
     adminInitialized = true;
   }
   safeInit(loadAdminInquiries, 'loadAdminInquiries');

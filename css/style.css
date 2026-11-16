@@ -975,7 +975,13 @@ select option {
 
 .ticket-confirmation { text-align: center; }
 .confirmation-qr { display: flex; justify-content: center; margin: 1.2rem 0; }
-.confirmation-qr canvas { border-radius: 8px; }
+.confirmation-qr canvas {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  filter: drop-shadow(0 12px 30px rgba(212, 175, 55, 0.25));
+}
+#ticket-confirmation-modal .brand-modal-content { max-height: 92vh; overflow-y: auto; }
 .confirmation-code { font-family: var(--font-heading); font-size: 1.1rem; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
 .confirmation-details { color: var(--color-white-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
 
@@ -1279,6 +1285,25 @@ select option {
   border-radius: var(--radius-pill);
 }
 .admin-group-empty { padding: 0.5rem 0; font-size: 0.85rem; }
+
+/* ============================================
+   MANUAL M-PESA (TILL) PAYMENT
+   ============================================ */
+.pay-instructions {
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+  text-align: left;
+}
+.pay-instructions ol { margin: 0.5rem 0 0 1.1rem; padding: 0; line-height: 1.6; }
+.pay-instructions strong { color: var(--gold-accent); }
+.admin-hint { font-size: 0.85rem; opacity: 0.75; margin-bottom: 1rem; }
+.admin-subtab .admin-group-count { margin-left: 0.4rem; }
+.pending-row .admin-row-actions { flex-wrap: wrap; gap: 0.5rem; }
+#order-received-modal,
+#my-ticket-modal { z-index: 1001; }
 
 /* ============================================
    M-PESA PAYMENT WAITING
