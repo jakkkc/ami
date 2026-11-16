@@ -41,3 +41,25 @@ if (hamburgerBtn && mobileNav) {
     });
   });
 }
+
+// Luxury polish: header turns solid after the hero, and a thin gold scroll-progress line
+(() => {
+  const header = document.querySelector('.site-header');
+  const bar = document.createElement('div');
+  bar.className = 'scroll-progress';
+  bar.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(bar);
+
+  let ticking = false;
+  const update = () => {
+    const y = window.scrollY || 0;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.transform = `scaleX(${max > 0 ? Math.min(y / max, 1) : 0})`;
+    if (header) header.classList.toggle('scrolled', y > 40);
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  update();
+})();

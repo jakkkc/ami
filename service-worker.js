@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ami-designs-v5';
+const CACHE_NAME = 'ami-designs-v6';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/assets/logo.png',
