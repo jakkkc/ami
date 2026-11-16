@@ -694,6 +694,43 @@ body::after {
 .gallery-item img { filter: saturate(0.82) contrast(1.04); }
 .gallery-item:hover img { filter: saturate(1.05) contrast(1.02); transform: scale(1.06); }
 
+/* ---------- Our Work (gallery) ---------- */
+.gallery-heading { display: block; } /* stack the eyebrow above the title like every other section */
+.gallery-grid { column-gap: 1.2rem; }
+.gallery-item {
+  position: relative;
+  min-height: 240px; /* hold space until the lazy image paints, so the grid doesn't collapse into stripes */
+  margin-bottom: 1.2rem;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(212, 175, 55, 0.09) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.8s ease-in-out infinite;
+}
+.gallery-item.is-loaded { min-height: 0; background: none; animation: none; }
+.gallery-item::after {
+  /* matted frame, same recipe as the brand and product cards */
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(244, 239, 228, 0.3);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms var(--ease-lux);
+}
+.gallery-item:hover::after { opacity: 1; }
+.gallery-overlay { padding: 1.6rem 1.5rem; }
+.gallery-item-title { font-size: 1.2rem; font-weight: 500; letter-spacing: 0.01em; }
+.gallery-item-category { letter-spacing: 0.22em; font-size: 0.62rem; margin-top: 0.35rem; }
+@media (hover: none) {
+  /* phones have no hover, so keep titles visible */
+  .gallery-overlay {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, transparent 45%);
+    padding: 1rem 1.1rem;
+  }
+  .gallery-item-title { font-size: 1rem; }
+  .gallery-item::after { display: none; }
+}
+
 /* ---------- Contact ---------- */
 .whatsapp-highlight { background: linear-gradient(160deg, rgba(212, 175, 55, 0.10), rgba(212, 175, 55, 0.02)); }
 .contact-form { border-top: 2px solid rgba(212, 175, 55, 0.5); }

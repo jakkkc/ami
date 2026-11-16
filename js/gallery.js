@@ -54,6 +54,15 @@ function renderGallery() {
 
   grid.querySelectorAll('.gallery-item').forEach((el) => {
     el.addEventListener('click', () => openLightbox(el.dataset.id));
+
+    // Placeholder shimmer/height applies only until the image has loaded
+    const img = el.querySelector('img');
+    const markLoaded = () => el.classList.add('is-loaded');
+    if (img.complete) markLoaded();
+    else {
+      img.addEventListener('load', markLoaded, { once: true });
+      img.addEventListener('error', markLoaded, { once: true });
+    }
   });
 }
 
