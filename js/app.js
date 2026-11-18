@@ -42,6 +42,12 @@ if (hamburgerBtn && mobileNav) {
   });
 }
 
+// Keep the footer copyright year current
+(() => {
+  const yearEl = document.getElementById('footer-year');
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+})();
+
 // Luxury polish: header turns solid after the hero, and a thin gold scroll-progress line
 (() => {
   const header = document.querySelector('.site-header');

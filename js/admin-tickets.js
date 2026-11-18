@@ -180,15 +180,89 @@ async function handleScannedCode(code) {
 }
 
 /* ---------- SALES LIST ---------- */
+let adminTicketRows = [];
+
 function renderTicketRow(t) {
+  const tag = t.status === 'used' ? '<span class="admin-oos-tag">Used</span>'
+    : t.status === 'pending' ? '<span class="admin-oos-tag">Pending</span>'
+    : t.status === 'rejected' ? '<span class="admin-oos-tag">Rejected</span>'
+    : '';
+  const mpesa = t.mpesa_code ? ` · M-Pesa ${escapeHtmlAdmin(t.mpesa_code)}` : '';
+
+  // Rejected buyers should hear from us: give admin a ready-made WhatsApp message
+  let actions = '';
+  if (t.status === 'rejected') {
+    const digits = String(t.buyer_whatsapp || '').replace(/[^0-9]/g, '');
+    const typeName = (t.ticket_types && t.ticket_types.name) || 'your ticket';
+    const msg = `Hello ${t.buyer_name}, we could not confirm your payment for ${typeName}. Please reply here so we can sort it out.`;
+    actions = `
+      <div class="admin-row-actions">
+        <a class="btn-secondary" target="_blank" rel="noopener" href="https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(msg)}">Message buyer</a>
+      </div>`;
+  }
+
   return `
     <div class="admin-row glass-card">
       <div class="admin-row-main">
-        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} · ${escapeHtmlAdmin(t.code)} ${t.status === 'used' ? '<span class="admin-oos-tag">Used</span>' : ''}${t.status === 'pending' ? '<span class="admin-oos-tag">Pending</span>' : ''}</p>
-        <p class="admin-row-sub">${escapeHtmlAdmin((t.brands && t.brands.name) || '')} · ${escapeHtmlAdmin((t.ticket_types && t.ticket_types.name) || '')} · KES ${Number(t.price_paid).toLocaleString('en-KE')} · ${escapeHtmlAdmin(t.buyer_whatsapp)}</p>
-      </div>
+        <p class="admin-row-title">${escapeHtmlAdmin(t.buyer_name)} · ${escapeHtmlAdmin(t.code)} ${tag}</p>
+        <p class="admin-row-sub">${escapeHtmlAdmin((t.brands && t.brands.name) || '')} · ${escapeHtmlAdmin((t.ticket_types && t.ticket_types.name) || '')} · KES ${Number(t.price_paid).toLocaleString('en-KE')} · ${escapeHtmlAdmin(t.buyer_whatsapp)}${mpesa}</p>
+      </div>${actions}
     </div>
   `;
+}
+
+function renderTicketSummary(rows) {
+  const el = document.getElementById('admin-tickets-summary');
+  if (!el) return;
+  const sold = rows.filter((t) => t.status === 'valid' || t.status === 'used');
+  const revenue = sold.reduce((sum, t) => sum + (Number(t.price_paid) || 0), 0);
+  const cards = [
+    { value: `KES ${revenue.toLocaleString('en-KE')}`, label: 'Revenue' },
+    { value: sold.length, label: 'Tickets Sold' },
+    { value: rows.filter((t) => t.status === 'used').length, label: 'Checked In' },
+    { value: rows.filter((t) => t.status === 'pending').length, label: 'Pending' },
+  ];
+  el.innerHTML = cards.map((c) => `
+    <div class="glass-card stats-card"><p class="stats-number">${escapeHtmlAdmin(String(c.value))}</p><p class="stats-label">${c.label}</p></div>
+  `).join('');
+}
+
+/* ---------- CSV EXPORT ---------- */
+function csvCell(value) {
+  let s = value == null ? '' : String(value);
+  // Neutralise spreadsheet formulas (CSV injection) in buyer-supplied text
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
+function buildTicketsCsv(rows) {
+  const header = ['Code', 'Buyer', 'WhatsApp', 'Event', 'Ticket Type', 'Price (KES)', 'Status', 'Payment Method', 'M-Pesa Code', 'Created'];
+  const lines = rows.map((t) => [
+    t.code,
+    t.buyer_name,
+    t.buyer_whatsapp,
+    t.brands && t.brands.name,
+    t.ticket_types && t.ticket_types.name,
+    t.price_paid,
+    t.status,
+    t.payment_method,
+    t.mpesa_code,
+    t.created_at ? new Date(t.created_at).toISOString() : '',
+  ].map(csvCell).join(','));
+  return [header.map(csvCell).join(','), ...lines].join('\r\n');
+}
+
+function exportTicketsCsv() {
+  if (!adminTicketRows.length) { alert('There are no tickets to export yet.'); return; }
+  // BOM so Excel reads UTF-8 names correctly
+  const blob = new Blob(['﻿' + buildTicketsCsv(adminTicketRows)], { type: 'text/csv;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `ami-tickets-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
 
 async function loadAdminTicketSales() {
@@ -201,16 +275,20 @@ async function loadAdminTicketSales() {
     .order('created_at', { ascending: false });
 
   if (error) { list.innerHTML = `<p class="admin-error-msg">${escapeHtmlAdmin(error.message)}</p>`; return; }
+  adminTicketRows = data;
+  renderTicketSummary(data);
   if (!data.length) { list.innerHTML = '<p class="admin-empty">No tickets sold yet.</p>'; return; }
 
   const pending = data.filter((t) => t.status === 'pending');
   const valid = data.filter((t) => t.status === 'valid');
   const used = data.filter((t) => t.status === 'used');
+  const rejected = data.filter((t) => t.status === 'rejected');
 
   const groups = [
     { rows: pending, label: 'Pending Approval' },
     { rows: valid, label: 'Valid — Not Yet Used' },
     { rows: used, label: 'Used — Checked In' },
+    { rows: rejected, label: 'Rejected' },
   ];
 
   list.innerHTML = groups.map((g) => `
@@ -225,6 +303,9 @@ async function loadAdminTicketSales() {
 }
 
 function wireTicketingSubtabs() {
+  const exportBtn = document.getElementById('export-tickets-csv-btn');
+  if (exportBtn) exportBtn.addEventListener('click', exportTicketsCsv);
+
   document.querySelectorAll('.admin-subtab').forEach((tab) => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.admin-subtab').forEach((t) => t.classList.remove('active'));

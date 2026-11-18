@@ -1,0 +1,7 @@
+# Normalise line endings so Windows and other machines don't fight over LF/CRLF
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary

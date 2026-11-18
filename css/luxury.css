@@ -418,6 +418,9 @@ body strong, body b { font-weight: 600; }
 .stats-number { font-size: 2.6rem; font-weight: 500; }
 .stats-label { letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.66rem; }
 .bar-fill { border-radius: 2px 2px 0 0; }
+.admin-tickets-summary { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 1.2rem; }
+.admin-tickets-summary .stats-number { font-size: 1.9rem; }
+.admin-toolbar { display: flex; justify-content: flex-end; margin-bottom: 1.2rem; }
 .scan-result-card { border-radius: var(--radius-card); font-size: 0.95rem; padding: 1.2rem 1.4rem; }
 .qr-reader { border: 1px solid var(--hairline-strong); }
 .pending-row { border-left-color: var(--gold-accent); }
@@ -705,6 +708,8 @@ body::after {
   background-size: 200% 100%;
   animation: skeletonShimmer 1.8s ease-in-out infinite;
 }
+.gallery-more { display: flex; justify-content: center; margin-top: 2rem; }
+.gallery-more[hidden], .gallery-more button[hidden] { display: none; }
 .gallery-item.is-loaded { min-height: 0; background: none; animation: none; }
 .gallery-item::after {
   /* matted frame, same recipe as the brand and product cards */

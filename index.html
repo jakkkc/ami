@@ -235,6 +235,10 @@
       <div class="gallery-skeleton"></div>
     </div>
 
+    <div class="gallery-more">
+      <button id="gallery-more-btn" class="btn-secondary" type="button" hidden>Show more</button>
+    </div>
+
     <p id="gallery-empty" class="gallery-empty" hidden>
       No gallery items yet — check back soon.
     </p>
@@ -392,7 +396,7 @@
 
     <p class="footer-tagline"><a href="#ticket" id="footer-my-ticket-link">My Ticket</a></p>
 
-    <p class="footer-copyright">&copy; 2025 AMI Designs & Events. All rights reserved.</p>
+    <p class="footer-copyright">&copy; <span id="footer-year">2026</span> AMI Designs & Events. All rights reserved.</p>
 
     <a href="https://jac-s-hub.vercel.app/" target="_blank" rel="noopener" class="footer-credit">
       Crafted by Munene Jackson
@@ -574,6 +578,10 @@
           </form>
         </div>
         <div id="admin-subtab-sales" class="admin-subtab-content" hidden>
+          <div id="admin-tickets-summary" class="stats-cards admin-tickets-summary"></div>
+          <div class="admin-toolbar">
+            <button id="export-tickets-csv-btn" class="btn-secondary" type="button">Export CSV</button>
+          </div>
           <div id="admin-tickets-list"></div>
         </div>
       </div>

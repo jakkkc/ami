@@ -2,6 +2,8 @@
 
 let galleryItems = [];
 let activeFilter = 'All';
+const GALLERY_PAGE_SIZE = 12;
+let galleryVisibleCount = GALLERY_PAGE_SIZE;
 
 async function loadGallery() {
   const grid = document.getElementById('gallery-grid');
@@ -32,8 +34,11 @@ function renderGallery() {
     ? galleryItems
     : galleryItems.filter((item) => item.category === activeFilter);
 
+  const moreBtn = document.getElementById('gallery-more-btn');
+
   if (filtered.length === 0) {
     grid.innerHTML = '';
+    if (moreBtn) moreBtn.hidden = true;
     emptyMsg.hidden = false;
     emptyMsg.textContent = galleryItems.length === 0
       ? 'No gallery items yet — check back soon.'
@@ -42,7 +47,16 @@ function renderGallery() {
   }
 
   emptyMsg.hidden = true;
-  grid.innerHTML = filtered.map((item, i) => `
+
+  // Show a page at a time so phones don't download every photo up front
+  const visible = filtered.slice(0, galleryVisibleCount);
+  if (moreBtn) {
+    const remaining = filtered.length - visible.length;
+    moreBtn.hidden = remaining <= 0;
+    moreBtn.textContent = remaining > 0 ? `Show more (${remaining} more)` : 'Show more';
+  }
+
+  grid.innerHTML = visible.map((item, i) => `
     <div class="gallery-item fade-up-scroll in-view" style="--delay:${(i % 4) * 80}ms" data-id="${item.id}">
       <img src="${item.image_url}" alt="${escapeHtml(item.title || '')}" loading="lazy">
       <div class="gallery-overlay">
@@ -97,9 +111,18 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.filter-tab').forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
       activeFilter = tab.dataset.filter;
+      galleryVisibleCount = GALLERY_PAGE_SIZE;
       renderGallery();
     });
   });
+
+  const moreBtn = document.getElementById('gallery-more-btn');
+  if (moreBtn) {
+    moreBtn.addEventListener('click', () => {
+      galleryVisibleCount += GALLERY_PAGE_SIZE;
+      renderGallery();
+    });
+  }
 
   document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
   document.getElementById('lightbox').addEventListener('click', (e) => {
