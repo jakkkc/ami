@@ -148,8 +148,8 @@ function wireTicketScanner() {
       await ticketScanner.start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: 250 },
-        async (decodedText) => { await handleScannedCode(decodedText); },
-        () => {}
+        onScanDecoded,
+        onScanMiss
       );
       document.getElementById('start-scanner-btn').textContent = 'Scanning…';
       document.getElementById('start-scanner-btn').disabled = true;
@@ -160,13 +160,49 @@ function wireTicketScanner() {
   });
 }
 
+/* The camera library reports the same QR on every frame (about 10 times a second) for as long as it
+   stays in view. Without a guard, the first frame checks the ticket in and the next frame replaces
+   the green "Valid" card with "Already used". These guards make one presentation of a QR count as
+   exactly one scan: one request at a time, and the same code is ignored until it has left the frame. */
+const SCAN_MISS_FRAMES_TO_RESET = 12; // ~1.2s without a QR in view before the same code can be scanned again
+let scanBusy = false;
+let lastScannedCode = null;
+let scanMissCount = 0;
+let scanRetryAfter = 0;
+
+async function onScanDecoded(decodedText) {
+  const code = String(decodedText || '').trim();
+  if (!code) return;
+  scanMissCount = 0;
+  if (scanBusy) return;                    // a check-in request is already in flight
+  if (code === lastScannedCode) return;    // same QR still in front of the camera
+  if (Date.now() < scanRetryAfter) return; // short pause after a failed (network) attempt
+
+  scanBusy = true;
+  try {
+    const definitive = await handleScannedCode(code);
+    if (definitive) lastScannedCode = code;
+    else scanRetryAfter = Date.now() + 1500;
+  } finally {
+    scanBusy = false;
+  }
+}
+
+function onScanMiss() {
+  // No QR in this frame. After a short gap, treat the QR as gone so showing it again is a fresh scan.
+  scanMissCount += 1;
+  if (scanMissCount >= SCAN_MISS_FRAMES_TO_RESET) lastScannedCode = null;
+}
+
+/* Returns true when the server gave a definitive answer (valid / already used / not found),
+   false when the request itself failed and the same code should be retried. */
 async function handleScannedCode(code) {
   const resultEl = document.getElementById('scan-result');
   const { data, error } = await supabaseClient.rpc('scan_ticket', { p_code: code });
 
   if (error || !data || !data.length) {
     resultEl.innerHTML = `<div class="scan-result-card scan-error">Scan failed: ${escapeHtmlAdmin((error && error.message) || 'Unknown error')}</div>`;
-    return;
+    return false;
   }
 
   const r = data[0];
@@ -177,6 +213,7 @@ async function handleScannedCode(code) {
   } else {
     resultEl.innerHTML = `<div class="scan-result-card scan-success">✅ Valid — checked in<br>${escapeHtmlAdmin(r.buyer_name)} (${escapeHtmlAdmin(r.buyer_whatsapp)})<br>${escapeHtmlAdmin(r.ticket_type_name)} · ${escapeHtmlAdmin(r.event_title || '')}</div>`;
   }
+  return true;
 }
 
 /* ---------- SALES LIST ---------- */

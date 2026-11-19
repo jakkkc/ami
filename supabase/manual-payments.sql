@@ -35,6 +35,10 @@ create unique index if not exists tickets_mpesa_code_unique
   on public.tickets (upper(mpesa_code))
   where mpesa_code is not null;
 
+-- A ticket code must identify exactly one ticket. Without this, two tickets sharing a code
+-- would let the same QR be scanned once per duplicate. (Also see supabase/ticket-code-unique.sql.)
+create unique index if not exists tickets_code_unique on public.tickets (code);
+
 -- Allow pending / rejected in addition to valid / used.
 alter table public.tickets drop constraint if exists tickets_status_check;
 alter table public.tickets
